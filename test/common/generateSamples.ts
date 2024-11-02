@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
 import * as path from 'path';
-import {StreamWriter, Emitter} from '../../lib/index';
+import { Emitter, StreamWriter } from '../../dist/lib';
 
 const outdir = path.join(__dirname, "../generated");
 const sampledir = path.join(__dirname, "../samples");

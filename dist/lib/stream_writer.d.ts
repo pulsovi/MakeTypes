@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import Writer from './writer';
 /**
  * Writes output to a stream.

@@ -9,29 +9,29 @@ export declare const enum BaseShape {
     COLLECTION = 6,
     ANY = 7
 }
-export declare type Shape = CBottomShape | CNullShape | CRecordShape | CStringShape | CBooleanShape | CNumberShape | CCollectionShape | CAnyShape;
+export type Shape = CBottomShape | CNullShape | CRecordShape | CStringShape | CBooleanShape | CNumberShape | CCollectionShape | CAnyShape;
 export declare const enum ContextType {
     ENTITY = 0,
     FIELD = 1
 }
 export declare function getReferencedRecordShapes(e: Emitter, s: Set<CRecordShape>, sh: Shape): void;
 export declare class FieldContext {
-    readonly type: ContextType.FIELD;
+    get type(): ContextType.FIELD;
     readonly parent: CRecordShape;
     readonly field: string;
     constructor(parent: CRecordShape, field: string);
     getName(e: Emitter): string;
 }
 export declare class EntityContext {
-    readonly type: ContextType.ENTITY;
+    get type(): ContextType.ENTITY;
     readonly parent: CCollectionShape;
     constructor(parent: CCollectionShape);
     getName(e: Emitter): string;
 }
-export declare type Context = FieldContext | EntityContext;
+export type Context = FieldContext | EntityContext;
 export declare class CBottomShape {
-    readonly type: BaseShape.BOTTOM;
-    readonly nullable: boolean;
+    get type(): BaseShape.BOTTOM;
+    get nullable(): boolean;
     makeNullable(): CBottomShape;
     makeNonNullable(): CBottomShape;
     emitType(e: Emitter): void;
@@ -40,8 +40,8 @@ export declare class CBottomShape {
 }
 export declare const BottomShape: CBottomShape;
 export declare class CNullShape {
-    readonly nullable: boolean;
-    readonly type: BaseShape.NULL;
+    get nullable(): boolean;
+    get type(): BaseShape.NULL;
     makeNullable(): CNullShape;
     makeNonNullable(): CNullShape;
     emitType(e: Emitter): void;
@@ -50,8 +50,8 @@ export declare class CNullShape {
 }
 export declare const NullShape: CNullShape;
 export declare class CNumberShape {
-    readonly nullable: boolean;
-    readonly type: BaseShape.NUMBER;
+    get nullable(): boolean;
+    get type(): BaseShape.NUMBER;
     makeNullable(): CNumberShape;
     makeNonNullable(): CNumberShape;
     emitType(e: Emitter): void;
@@ -61,8 +61,8 @@ export declare class CNumberShape {
 export declare const NumberShape: CNumberShape;
 export declare const NullableNumberShape: CNumberShape;
 export declare class CStringShape {
-    readonly type: BaseShape.STRING;
-    readonly nullable: boolean;
+    get type(): BaseShape.STRING;
+    get nullable(): boolean;
     makeNullable(): CStringShape;
     makeNonNullable(): CStringShape;
     emitType(e: Emitter): void;
@@ -72,8 +72,8 @@ export declare class CStringShape {
 export declare const StringShape: CStringShape;
 export declare const NullableStringShape: CStringShape;
 export declare class CBooleanShape {
-    readonly type: BaseShape.BOOLEAN;
-    readonly nullable: boolean;
+    get type(): BaseShape.BOOLEAN;
+    get nullable(): boolean;
     makeNullable(): CBooleanShape;
     makeNonNullable(): CBooleanShape;
     emitType(e: Emitter): void;
@@ -83,13 +83,13 @@ export declare class CBooleanShape {
 export declare const BooleanShape: CBooleanShape;
 export declare const NullableBooleanShape: CBooleanShape;
 export declare class CAnyShape {
-    readonly type: BaseShape.ANY;
+    get type(): BaseShape.ANY;
     private readonly _shapes;
     private readonly _nullable;
     private _hasDistilledShapes;
     private _distilledShapes;
     constructor(shapes: Shape[], nullable: boolean);
-    readonly nullable: boolean;
+    get nullable(): boolean;
     makeNullable(): CAnyShape;
     makeNonNullable(): CAnyShape;
     private _ensureDistilled;
@@ -100,13 +100,13 @@ export declare class CAnyShape {
     equal(t: Shape): boolean;
 }
 export declare class CRecordShape {
-    readonly type: BaseShape.RECORD;
+    get type(): BaseShape.RECORD;
     private readonly _nullable;
     private readonly _fields;
     readonly contexts: Context[];
     private _name;
     private constructor();
-    readonly nullable: boolean;
+    get nullable(): boolean;
     /**
      * Construct a new record shape. Returns an existing, equivalent record shape
      * if applicable.
@@ -128,12 +128,12 @@ export declare class CRecordShape {
     getName(e: Emitter): string;
 }
 export declare class CCollectionShape {
-    readonly type: BaseShape.COLLECTION;
+    get type(): BaseShape.COLLECTION;
     readonly baseShape: Shape;
     readonly contexts: Context[];
     private _name;
     constructor(baseShape: Shape, contexts?: Context[]);
-    readonly nullable: boolean;
+    get nullable(): boolean;
     makeNullable(): CCollectionShape;
     makeNonNullable(): CCollectionShape;
     addContext(ctx: Context): CCollectionShape;

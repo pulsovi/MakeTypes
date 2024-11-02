@@ -2,8 +2,8 @@
   "name": "maketypes",
   "version": "1.1.2",
   "description": "Make TypeScript types and proxy objects from example JSON objects. Can use proxy objects to dynamically type check JSON at runtime.",
-  "main": "lib/index.js",
-  "types": "lib/index",
+  "main": "dist/index.js",
+  "types": "dist/index",
   "scripts": {
     "prepublish": "tsc",
     "generate:test": "node ./test/common/generateSamples.js",
@@ -35,16 +35,17 @@
   },
   "homepage": "https://github.com/jvilk/MakeTypes#readme",
   "devDependencies": {
-    "@types/mocha": "^5.2.4",
-    "@types/node": "0.0.2",
-    "@types/yargs": "^6.3.3",
+    "@types/assert": "^1.5.11",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "^22.8.6",
+    "@types/yargs": "^17.0.33",
     "coveralls": "^3.0.2",
     "istanbul": "^1.0.0-alpha",
     "mocha": "^5.2.0",
     "npm-run-all": "^3.1.2",
-    "typescript": "^2.1.4"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "yargs": "^6.5.0"
+    "yargs": "^17.7.2"
   }
 }

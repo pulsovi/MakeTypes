@@ -1,22 +1,18 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
+        "module": "NodeNext",
         "noImplicitAny": true,
         "noUnusedLocals": true,
         "noEmitOnError": true,
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "alwaysStrict": true,
         "inlineSourceMap": true,
         "strictNullChecks": true,
-        "lib": [
-            "es6", "es2015.collection"
-        ],
-        "declaration": true
+        "declaration": true,
+        "outDir": "dist",
     },
     "include": [
         "index.ts",
         "lib/**/*.ts",
-        "test/common/*.ts"
     ]
 }
