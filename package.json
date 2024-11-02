@@ -3,7 +3,7 @@
   "version": "1.1.3",
   "description": "Make TypeScript types and proxy objects from example JSON objects. Can use proxy objects to dynamically type check JSON at runtime.",
   "main": "dist/index.js",
-  "types": "dist/index",
+  "types": "dist/lib/index.d.ts",
   "scripts": {
     "prepublish": "tsc",
     "generate:test": "node ./test/common/generateSamples.js",
