@@ -7,7 +7,8 @@ export default class Emitter {
     readonly interfaces: Writer;
     readonly proxies: Writer;
     private _helpersToEmit;
-    constructor(interfaces: Writer, proxies: Writer);
+    typeOfObject: 'interface' | 'type';
+    constructor(interfaces: Writer, proxies: Writer, typeOfObject?: 'interface' | 'type');
     markHelperAsUsed(n: string): void;
     emit(root: any, rootName: string): void;
     private _emitRootRecordShape;
