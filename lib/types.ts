@@ -1,7 +1,7 @@
 import {default as Emitter, emitProxyTypeCheck} from './emit';
 
-  // Add any more invalid charachaters here 
-  const invalidChars = /[0-9-+\*\/\?: ]/g;
+// Add any more invalid charachaters here 
+const invalidChars = /[0-9-+\*\/\?: ]/g;
 function safeField(field: string)
 {
   return field.match(invalidChars)
@@ -413,7 +413,11 @@ export class CRecordShape {
   }
   public emitInterfaceDefinition(e: Emitter): void {
     const w = e.interfaces;
-    w.write(`export interface ${this.getName(e)} {`).endl();
+    if (e.typeOfObject === 'type') {
+      w.write(`export type ${this.getName(e)} = {`).endl();
+    } else {
+      w.write(`export interface ${this.getName(e)} {`).endl();
+    }
     this.forEachField((t, name) => {
       w.tab(1).write(safeField(name));
       if (t.nullable) {

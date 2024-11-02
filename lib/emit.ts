@@ -66,9 +66,13 @@ export default class Emitter {
   public readonly interfaces: Writer;
   public readonly proxies: Writer;
   private _helpersToEmit = new Set<string>();
-  constructor (interfaces: Writer, proxies: Writer) {
+  // The type of object being emitted.
+  // some prefer interfaces, some prefer types.
+  public typeOfObject: 'interface' | 'type' = 'interface';
+  constructor (interfaces: Writer, proxies: Writer, typeOfObject?: 'interface' | 'type') {
     this.interfaces = interfaces;
     this.proxies = proxies;
+    this.typeOfObject = typeOfObject || 'interface';
   }
   public markHelperAsUsed(n: string): void {
     this._helpersToEmit.add(n);
