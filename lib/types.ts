@@ -1,4 +1,4 @@
-import {default as Emitter, emitProxyTypeCheck} from './emit';
+import {default as Emitter, emitProxyTypeCheck} from './emit.js';
 
 // Add any more invalid charachaters here 
 const invalidChars = /[0-9-+\*\/\?: ]/g;

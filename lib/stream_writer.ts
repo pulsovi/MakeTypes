@@ -1,4 +1,4 @@
-import Writer from './writer';
+import Writer from './writer.js';
 
 /**
  * Writes output to a stream.

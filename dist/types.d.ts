@@ -1,4 +1,4 @@
-import { default as Emitter } from './emit';
+import { default as Emitter } from './emit.js';
 export declare const enum BaseShape {
     BOTTOM = 0,
     NULL = 1,

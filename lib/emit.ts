@@ -1,5 +1,5 @@
-import Writer from './writer';
-import {CRecordShape, BaseShape, d2s, Shape, getReferencedRecordShapes} from './types';
+import Writer from './writer.js';
+import {CRecordShape, BaseShape, d2s, Shape, getReferencedRecordShapes} from './types.js';
 
 export function emitProxyTypeCheck(e: Emitter, w: Writer, t: Shape, tabLevel: number, dataVar: string, fieldName: string): void {
   switch(t.type) {

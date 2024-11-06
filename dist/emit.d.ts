@@ -1,5 +1,5 @@
-import Writer from './writer';
-import { CRecordShape, Shape } from './types';
+import Writer from './writer.js';
+import { CRecordShape, Shape } from './types.js';
 export declare function emitProxyTypeCheck(e: Emitter, w: Writer, t: Shape, tabLevel: number, dataVar: string, fieldName: string): void;
 export default class Emitter {
     private _records;
