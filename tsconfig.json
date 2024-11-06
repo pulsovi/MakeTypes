@@ -1,18 +1,11 @@
 {
     "compilerOptions": {
-        "module": "NodeNext",
-        "noImplicitAny": true,
+        "module": "esnext",
+        "moduleResolution": "node",
         "noUnusedLocals": true,
-        "noEmitOnError": true,
-        "moduleResolution": "NodeNext",
-        "alwaysStrict": true,
-        "inlineSourceMap": true,
-        "strictNullChecks": true,
         "declaration": true,
         "outDir": "dist",
+        "rootDir": "lib",
+        "skipLibCheck": true,
     },
-    "include": [
-        "index.ts",
-        "lib/**/*.ts",
-    ]
 }

@@ -1,26 +1,11 @@
 {
-  "name": "maketypes",
+  "name": "generate-ts-types",
   "version": "1.1.3",
   "description": "Make TypeScript types and proxy objects from example JSON objects. Can use proxy objects to dynamically type check JSON at runtime.",
   "main": "dist/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
-    "prepublish": "tsc",
-    "generate:test": "node ./test/common/generateSamples.js",
-    "build:test": "tsc -p test/tsconfig.json",
-    "mocha": "mocha",
-    "istanbul": "istanbul cover ./test/common/generateSamples.js",
-    "coverage": "npm-run-all --serial prepublish istanbul",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "travis": "npm-run-all --serial test coverage coveralls",
-    "test": "npm-run-all --serial prepublish generate:test build:test mocha"
-  },
-  "bin": {
-    "make_types": "./index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ifeoluwak/MakeTypes.git"
+    "build": "tsc"
   },
   "keywords": [
     "TypeScript",
@@ -28,21 +13,13 @@
     "JSON",
     "synthesis"
   ],
+  "type": "module",
   "author": "John Vilk <jvilk@cs.umass.edu>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ifeoluwak/MakeTypes.git/issues"
-  },
   "homepage": "https://github.com/ifeoluwak/MakeTypes.git#readme",
   "devDependencies": {
-    "@types/assert": "^1.5.11",
-    "@types/mocha": "^10.0.9",
-    "@types/node": "^22.8.6",
+    "@types/node": "^22.9.0",
     "@types/yargs": "^17.0.33",
-    "coveralls": "^3.0.2",
-    "istanbul": "^1.0.0-alpha",
-    "mocha": "^5.2.0",
-    "npm-run-all": "^3.1.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {

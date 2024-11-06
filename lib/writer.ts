@@ -22,4 +22,5 @@ abstract class Writer {
     return this.write(s).endl();
   }
 }
+
 export default Writer;
