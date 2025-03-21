@@ -404,7 +404,7 @@ export class CRecordShape {
         w.tab(1).writeln(`public static Parse(d: string): ${this.getProxyType(e)} {`);
         w.tab(2).writeln(`return ${this.getProxyClass(e)}.Create(JSON.parse(d));`);
         w.tab(1).writeln(`}`);
-        w.tab(1).writeln(`public static Create(d: any, field: string = 'root'): ${this.getProxyType(e)} {`);
+        w.tab(1).writeln(`public static Create(d: any, field?: string): ${this.getProxyType(e)} {`);
         w.tab(2).writeln(`if (!field) {`);
         w.tab(3).writeln(`obj = d;`);
         w.tab(3).writeln(`field = "root";`);
