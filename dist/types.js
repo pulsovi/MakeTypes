@@ -367,10 +367,10 @@ export class CRecordShape {
         }
     }
     getProxyClass(e) {
-        return `${this.getName(e)}Proxy`;
+        return `${this.getName(e)}${e.postfixProxy ? 'Proxy' : ''}`;
     }
     getProxyType(e) {
-        let rv = `${this.getName(e)}Proxy`;
+        let rv = `${this.getName(e)}${e.postfixProxy ? 'Proxy' : ''}`;
         if (this.nullable) {
             rv += " | null";
         }

@@ -66,13 +66,21 @@ export default class Emitter {
   public readonly interfaces: Writer;
   public readonly proxies: Writer;
   private _helpersToEmit = new Set<string>();
+  /**
+   * if true `Proxy` string will be added at the end of proxies name
+   */
+  public postfixProxy: boolean;
   // The type of object being emitted.
   // some prefer interfaces, some prefer types.
   public typeOfObject: 'interface' | 'type' = 'interface';
-  constructor (interfaces: Writer, proxies: Writer, typeOfObject?: 'interface' | 'type') {
+  constructor (interfaces: Writer, proxies: Writer, options: {
+    typeOfObject?: 'interface' | 'type';
+    postfixProxy?: boolean;
+  } = {}) {
     this.interfaces = interfaces;
     this.proxies = proxies;
-    this.typeOfObject = typeOfObject || 'interface';
+    this.typeOfObject = options.typeOfObject ?? 'interface';
+    this.postfixProxy = ('postfixProxy' in options) ? options.postfixProxy : true;
   }
   public markHelperAsUsed(n: string): void {
     this._helpersToEmit.add(n);
@@ -100,9 +108,9 @@ export default class Emitter {
       this.interfaces.write(`export type ${rootName} = `)
       rootShape.emitType(this);
       this.interfaces.writeln(`;`).endl();
-      this.proxies.writeln(`export class ${rootName}Proxy {`);
+      this.proxies.writeln(`export class ${rootName}${this.postfixProxy ? 'Proxy' : ''} {`);
       this.proxies.tab(1).writeln(`public static Parse(s: string): ${rootShape.getProxyType(this)} {`);
-      this.proxies.tab(2).writeln(`return ${rootName}Proxy.Create(JSON.parse(s));`);
+      this.proxies.tab(2).writeln(`return ${rootName}${this.postfixProxy ? 'Proxy' : ''}.Create(JSON.parse(s));`);
       this.proxies.tab(1).writeln(`}`);
       this.proxies.tab(1).writeln(`public static Create(s: any, fieldName?: string): ${rootShape.getProxyType(this)} {`);
       this.proxies.tab(2).writeln(`if (!fieldName) {`);

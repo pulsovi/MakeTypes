@@ -7,8 +7,15 @@ export default class Emitter {
     readonly interfaces: Writer;
     readonly proxies: Writer;
     private _helpersToEmit;
+    /**
+     * if true `Proxy` string will be added at the end of proxies name
+     */
+    postfixProxy: boolean;
     typeOfObject: 'interface' | 'type';
-    constructor(interfaces: Writer, proxies: Writer, typeOfObject?: 'interface' | 'type');
+    constructor(interfaces: Writer, proxies: Writer, options?: {
+        typeOfObject?: 'interface' | 'type';
+        postfixProxy?: boolean;
+    });
     markHelperAsUsed(n: string): void;
     emit(root: any, rootName: string): void;
     private _emitRootRecordShape;

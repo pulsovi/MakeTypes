@@ -402,10 +402,10 @@ export class CRecordShape {
     }
   }
   public getProxyClass(e: Emitter): string {
-    return `${this.getName(e)}Proxy`;
+    return `${this.getName(e)}${e.postfixProxy ? 'Proxy' : ''}`;
   }
   public getProxyType(e: Emitter): string {
-    let rv = `${this.getName(e)}Proxy`;
+    let rv = `${this.getName(e)}${e.postfixProxy ? 'Proxy' : ''}`;
     if (this.nullable) {
       rv += " | null";
     }
