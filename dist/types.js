@@ -430,6 +430,13 @@ export class CRecordShape {
         this.forEachField((t, name) => {
             emitProxyTypeCheck(e, w, t, 2, `${safeObjectField('d', name)}`, `field + ".${name}"`);
         });
+        // disallow unknown fields
+        const fieldNames = [];
+        this.forEachField((t, name) => { fieldNames.push(name); });
+        w.tab(2).writeln(`const knownProperties = ${JSON.stringify(fieldNames)};`);
+        w.tab(2).writeln(`const unknownProperty = Object.keys(d).find(key => !knownProperties.includes(key));`);
+        w.tab(2).writeln(`if (unknownProperty) errorHelper(unknownProperty, d, "never", false);`);
+        // create instance
         w.tab(2).writeln(`return new ${this.getProxyClass(e)}(d);`);
         w.tab(1).writeln(`}`);
         w.tab(1).writeln(`private constructor(d: any) {`);
