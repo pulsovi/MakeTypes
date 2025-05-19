@@ -2,11 +2,10 @@
  * Library entry point. Exports public-facing interfaces.
  */
 
-import Writer from './writer.js';
-import CbWriter from './cb_writer.js';
-import NopWriter from './nop_writer.js';
-import StreamWriter from './stream_writer.js';
-import * as Types from './types.js';
-import {default as Emitter} from './emit.js';
+import CallbackWriter from './classes/CallbackWritter.js';
+import Emitter from './classes/Emitter.js';
+import Writer from './classes/Writer.js';
+import NopWriter from './classes/NopWriter.js';
+import StreamWriter from './classes/StreamWriter.js';
 
-export {Writer, CbWriter, NopWriter, StreamWriter, Types, Emitter};
+export {Writer, CallbackWriter as CbWriter, NopWriter, StreamWriter, Emitter};

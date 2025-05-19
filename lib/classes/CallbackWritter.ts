@@ -1,4 +1,4 @@
-import Writer from './writer.js';
+import Writer from './Writer.js';
 
 /**
  * Calls callbacks when written to.
