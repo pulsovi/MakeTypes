@@ -83,9 +83,12 @@ export class AnyShape extends Shape {
             });
             writter.tab(tabLevel + i).writeln(`} catch (e) {`);
             if (i === distilledShapes.length - 1) {
-                writter.tab(tabLevel + i + 1).writeln(`prompt(proxyName+':', JSON.stringify(obj));`);
-                if (process.argv.includes('-debug'))
+                if (!process.argv.includes('-prod')) {
+                    writter.tab(tabLevel + i + 1).writeln(`prompt(proxyName+':', JSON.stringify(obj));`);
+                }
+                if (process.argv.includes('-debug')) {
                     writter.tab(tabLevel + i + 1).writeln(`throw e;`);
+                }
             }
         });
         for (let i = 0; i < distilledShapes.length; i++) {

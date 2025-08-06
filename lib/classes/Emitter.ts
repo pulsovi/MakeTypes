@@ -176,8 +176,10 @@ export default class Emitter {
       w.tab(2).writeln(`} catch(error) {`);
       w.tab(3).writeln(`console.log(error);`);
       w.tab(2).writeln(`}`);
-      w.tab(2).writeln(`console.log('Expected ' + type + " at " + field + " but found:\\n" + JSON.stringify(d), jsonClone);`);
-      w.tab(2).writeln(`prompt(proxyName+':', JSON.stringify(obj));`);
+      w.tab(2).writeln(`console.error('Expected "' + type + '" at ' + field + ' but found:\\n' + JSON.stringify(d), jsonClone);`);
+      if (!process.argv.includes('-prod')) {
+        w.tab(2).writeln(`prompt(proxyName+':', JSON.stringify(obj));`);
+      }
       w.tab(1).writeln(`}`);
       if (process.argv.includes('-debug'))
         w.tab(1).writeln(`throw new TypeError('Expected ' + type + " at " + field + " but found:\\n" + JSON.stringify(d) + "\\n\\nFull object:\\n" + JSON.stringify(obj));`);
