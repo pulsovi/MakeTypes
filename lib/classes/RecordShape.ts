@@ -154,7 +154,7 @@ export class RecordShape extends Shape {
     // disallow unknown fields
     const fieldNames = [];
     this.forEachField((t, name) => { fieldNames.push(name); });
-    w.tab(2).writeln(`const knownProperties = ${JSON.stringify(fieldNames)};`);
+    w.tab(2).writeln(`const knownProperties: string[] = ${JSON.stringify(fieldNames)};`);
     w.tab(2).writeln(`const unknownProperty = Object.keys(d).find(key => !knownProperties.includes(key));`);
     w.tab(2).writeln(`if (unknownProperty) errorHelper(field + '.' + unknownProperty, d[unknownProperty], "never (unknown property)");`);
 
