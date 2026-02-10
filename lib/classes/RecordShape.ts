@@ -146,9 +146,13 @@ export class RecordShape extends Shape {
     // At this point, we know we have a non-null object.
     // Check all fields.
     this.forEachField((t, name) => {
-      if (t.optional) w.tab(2).writeln(`if (${JSON.stringify(name)} in d) {`);
-      t.emitProxyTypeCheck({ emitter: e, tabLevel: 2 + (t.optional ? 1 : 0), dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
-      if (t.optional) w.tab(2).writeln(`}`);
+      if (t.optional) {
+        w.tab(2).writeln(`if (${JSON.stringify(name)} in d && typeof d[${JSON.stringify(name)}] !== 'undefined') {`);
+        t.emitProxyTypeCheck({ emitter: e, tabLevel: 3, dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
+        w.tab(2).writeln(`}`);
+      } else {
+        t.emitProxyTypeCheck({ emitter: e, tabLevel: 2, dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
+      }
     });
 
     // disallow unknown fields
@@ -165,7 +169,7 @@ export class RecordShape extends Shape {
     // Emit an assignment for each field.
     this.forEachField((t, name) => {
       w.tab(2)
-        .write(t.optional ? `if (${JSON.stringify(name)} in d) ` : '')
+        .write(t.optional ? `if (${JSON.stringify(name)} in d && typeof d[${JSON.stringify(name)}] !== 'undefined') ` : '')
         .writeln(`${safeObjectField('this',name)} = ${safeObjectField('d', name)};`);
     });
     w.tab(1).writeln(`}`);
