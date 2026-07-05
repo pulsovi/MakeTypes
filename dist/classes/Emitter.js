@@ -19,7 +19,7 @@ export default class Emitter {
         this.interfaces = interfaces;
         this.proxies = proxies;
         this.typeOfObject = options.typeOfObject ?? 'interface';
-        this.postfixProxy = ('postfixProxy' in options) ? options.postfixProxy : true;
+        this.postfixProxy = options.postfixProxy ?? true;
     }
     markHelperAsUsed(n) {
         this._helpersToEmit.add(n);

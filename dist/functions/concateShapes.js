@@ -5,7 +5,7 @@ import { NeverShape } from "../classes/NeverShape.js";
 import { RecordShape } from "../classes/RecordShape.js";
 Error.stackTraceLimit = 200;
 export function concateShapes(e, s1, s2) {
-    if (new Error('').stack.split('\n').length > 90)
+    if ((new Error('').stack ?? '').split('\n').length > 90)
         debugger;
     // concateShapes(⊥, σ) = concateShapes(σ, ⊥) = σ
     if (s1 instanceof BottomShape) {

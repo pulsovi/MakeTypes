@@ -6,10 +6,10 @@ import { NeverShape } from "../classes/NeverShape.js";
 import { RecordShape } from "../classes/RecordShape.js";
 import { Shape } from "../classes/Shape.js";
 
-Error.stackTraceLimit = 200;
+(Error as any).stackTraceLimit = 200;
 
 export function concateShapes(e: Emitter, s1: Shape, s2: Shape): Shape {
-  if (new Error('').stack.split('\n').length > 90) debugger;
+  if ((new Error('').stack ?? '').split('\n').length > 90) debugger;
 
   // concateShapes(⊥, σ) = concateShapes(σ, ⊥) = σ
   if (s1 instanceof BottomShape) {
