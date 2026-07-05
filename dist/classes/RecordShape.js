@@ -123,6 +123,7 @@ export class RecordShape extends Shape {
         w.tab(1).writeln(`}`);
         w.tab(1).writeln(`public static Create(d: any, field?: string, multiple ?: string): ${this.getProxyType(e)} {`);
         w.tab(2).writeln(`if (!field) {`);
+        w.tab(3).writeln(`d = structuredClone(d);`);
         w.tab(3).writeln(`obj = d;`);
         w.tab(3).writeln(`field = "root";`);
         w.tab(2).writeln(`}`);
@@ -139,16 +140,19 @@ export class RecordShape extends Shape {
         // At this point, we know we have a non-null object.
         // Check all fields.
         this.forEachField((t, name) => {
-            if (t.optional)
-                w.tab(2).writeln(`if (${JSON.stringify(name)} in d) {`);
-            t.emitProxyTypeCheck({ emitter: e, tabLevel: 2 + (t.optional ? 1 : 0), dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
-            if (t.optional)
+            if (t.optional) {
+                w.tab(2).writeln(`if (${JSON.stringify(name)} in d && typeof d[${JSON.stringify(name)}] !== 'undefined') {`);
+                t.emitProxyTypeCheck({ emitter: e, tabLevel: 3, dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
                 w.tab(2).writeln(`}`);
+            }
+            else {
+                t.emitProxyTypeCheck({ emitter: e, tabLevel: 2, dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
+            }
         });
         // disallow unknown fields
         const fieldNames = [];
         this.forEachField((t, name) => { fieldNames.push(name); });
-        w.tab(2).writeln(`const knownProperties = ${JSON.stringify(fieldNames)};`);
+        w.tab(2).writeln(`const knownProperties: string[] = ${JSON.stringify(fieldNames)};`);
         w.tab(2).writeln(`const unknownProperty = Object.keys(d).find(key => !knownProperties.includes(key));`);
         w.tab(2).writeln(`if (unknownProperty) errorHelper(field + '.' + unknownProperty, d[unknownProperty], "never (unknown property)");`);
         // create instance
@@ -158,7 +162,7 @@ export class RecordShape extends Shape {
         // Emit an assignment for each field.
         this.forEachField((t, name) => {
             w.tab(2)
-                .write(t.optional ? `if (${JSON.stringify(name)} in d) ` : '')
+                .write(t.optional ? `if (${JSON.stringify(name)} in d && typeof d[${JSON.stringify(name)}] !== 'undefined') ` : '')
                 .writeln(`${safeObjectField('this', name)} = ${safeObjectField('d', name)};`);
         });
         w.tab(1).writeln(`}`);

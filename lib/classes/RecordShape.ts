@@ -130,6 +130,7 @@ export class RecordShape extends Shape {
     w.tab(1).writeln(`}`);
     w.tab(1).writeln(`public static Create(d: any, field?: string, multiple ?: string): ${this.getProxyType(e)} {`);
     w.tab(2).writeln(`if (!field) {`);
+    w.tab(3).writeln(`d = structuredClone(d);`);
     w.tab(3).writeln(`obj = d;`);
     w.tab(3).writeln(`field = "root";`);
     w.tab(2).writeln(`}`);

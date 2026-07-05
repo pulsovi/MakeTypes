@@ -83,12 +83,9 @@ export class AnyShape extends Shape {
             });
             writter.tab(tabLevel + i).writeln(`} catch (e) {`);
             if (i === distilledShapes.length - 1) {
-                if (!process.argv.includes('-prod')) {
-                    writter.tab(tabLevel + i + 1).writeln(`prompt(proxyName+':', JSON.stringify(obj));`);
-                }
-                if (process.argv.includes('-debug')) {
-                    writter.tab(tabLevel + i + 1).writeln(`throw e;`);
-                }
+                writter.tab(tabLevel + i + 1).writeln(`if (typeof globalThis.handleProxyError === 'function') {`);
+                writter.tab(tabLevel + i + 2).writeln(`globalThis.handleProxyError(proxyName, obj, { path: ${fieldName}.split('.'), expectedType: ${JSON.stringify(this.getProxyType(emitter))}, actualValue: ${dataVar} });`);
+                writter.tab(tabLevel + i + 1).writeln(`}`);
             }
         });
         for (let i = 0; i < distilledShapes.length; i++) {

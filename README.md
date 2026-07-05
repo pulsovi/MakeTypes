@@ -101,7 +101,7 @@ Example TypeScript code using proxy class:
 ```typescript
 import {RootNameProxy} from './proxies';
 
-// RootName.Create will throw an exception if rawJson does not match the type of RootName.
+// Without globalThis.handleProxyError, Create does not throw on type mismatches.
 const proxyObject = RootNameProxy.Parse('{"foo": "bar"}');
 // Now, you can access all of the properties of the JSON object with confidence that they
 // actually exist.
@@ -109,6 +109,40 @@ let foo = proxyObject.foo; // TypeScript knows foo is a string
 // If one of the properties on the proxy is optional, then it will have a null value.
 let baz = proxyObject.baz; // TypeScript knows baz is number | null. In this case, it will be null.
 ```
+
+#### Runtime error handling with `globalThis.handleProxyError`
+
+By default, generated proxies **do not throw** when JSON does not match the expected type. They behave like an unchecked cast (`as unknown as RootNameProxy`): TypeScript still type-checks your code, but invalid data passes through at runtime without interrupting execution.
+
+To opt into runtime validation, assign a handler on `globalThis` **before** calling any proxy method:
+
+```typescript
+declare global {
+  var handleProxyError: (
+    proxyName: string,
+    raw: unknown,
+    error: { path: string[]; expectedType: string; actualValue: unknown },
+  ) => void;
+}
+
+globalThis.handleProxyError = (proxyName, raw, error) => {
+  throw new TypeError(
+    `[${proxyName}] Expected ${error.expectedType} at ${error.path.join('.')} ` +
+    `but found ${JSON.stringify(error.actualValue)}\n` +
+    `Full object:\n${JSON.stringify(raw)}`,
+  );
+};
+```
+
+The handler receives:
+
+* **`proxyName`** — the root proxy class name (e.g. `"RootNameProxy"`).
+* **`raw`** — the full JSON object currently being validated.
+* **`error.path`** — the field path as a string array (e.g. `["root", "foo", "baz"]`).
+* **`error.expectedType`** — the expected type at that path (e.g. `"string"`, or `"Foo | Bar"` for union fields).
+* **`error.actualValue`** — the value that failed validation at that path.
+
+What you do inside the handler is up to you: log, report to an observability service, collect errors, or re-throw. If `handleProxyError` is not defined, mismatches are silently ignored and the proxy is still returned.
 
 ### Using Interfaces
 

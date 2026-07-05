@@ -98,28 +98,19 @@ export default class Emitter {
     const s = this._helpersToEmit;
     if (s.has('throwNull2NonNull')) {
       this.markHelperAsUsed("errorHelper");
-      if (process.argv.includes('-debug'))
-        w.writeln(`function throwNull2NonNull(field: string, value: any, multiple?: string): never {`)
-      else
-        w.writeln(`function throwNull2NonNull(field: string, value: any, multiple?: string): void {`)
+      w.writeln(`function throwNull2NonNull(field: string, value: any, multiple?: string): void {`);
       w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "non-nullable object");`);
       w.writeln(`}`);
     }
     if (s.has('throwNotObject')) {
       this.markHelperAsUsed("errorHelper");
-      if (process.argv.includes('-debug'))
-        w.writeln(`function throwNotObject(field: string, value: any, multiple?: string): never {`);
-      else
-        w.writeln(`function throwNotObject(field: string, value: any, multiple?: string): void {`);
+      w.writeln(`function throwNotObject(field: string, value: any, multiple?: string): void {`);
       w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "object");`);
       w.writeln(`}`);
     }
     if (s.has('throwIsArray')) {
       this.markHelperAsUsed("errorHelper");
-      if (process.argv.includes('-debug'))
-        w.writeln(`function throwIsArray(field: string, value: any, multiple?: string): never {`);
-      else
-        w.writeln(`function throwIsArray(field: string, value: any, multiple?: string): void {`);
+      w.writeln(`function throwIsArray(field: string, value: any, multiple?: string): void {`);
       w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "object");`);
       w.writeln(`}`);
     }
@@ -155,34 +146,25 @@ export default class Emitter {
     }
     if (s.has('checkNever')) {
       this.markHelperAsUsed("errorHelper");
-      if (process.argv.includes('-debug'))
-        w.writeln(`function checkNever(value: any, field: string, multiple?: string): never {`)
-      else
-        w.writeln(`function checkNever(value: any, field: string, multiple?: string): void {`)
+      w.writeln(`function checkNever(value: any, field: string, multiple?: string): void {`)
       w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "never");`);
       w.writeln(`}`);
     }
     if (s.has('errorHelper')) {
-      if (process.argv.includes('-debug'))
-        w.writeln(`function errorHelper(field: string, d: any, type: string): never {`);
-      else
-        w.writeln(`function errorHelper(field: string, d: any, type: string): void {`);
+      w.writeln(`function errorHelper(field: string, d: any, type: string): void {`);
       w.tab(1).writeln(`if (type.includes(' | ')) {`);
       w.tab(2).writeln(`throw new TypeError('Expected ' + type + " at " + field + " but found:\\n" + JSON.stringify(d) + "\\n\\nFull object:\\n" + JSON.stringify(obj));`);
       w.tab(1).writeln(`} else {`);
       w.tab(2).writeln(`let jsonClone = obj;`);
       w.tab(2).writeln(`try {`);
-      w.tab(3).writeln(`jsonClone = JSON.parse(JSON.stringify(obj));`);
+      w.tab(3).writeln(`jsonClone = structuredClone(obj);`);
       w.tab(2).writeln(`} catch(error) {`);
       w.tab(3).writeln(`console.log(error);`);
       w.tab(2).writeln(`}`);
-      w.tab(2).writeln(`console.error('Expected "' + type + '" at ' + field + ' but found:\\n' + JSON.stringify(d), jsonClone);`);
-      if (!process.argv.includes('-prod')) {
-        w.tab(2).writeln(`prompt(proxyName+':', JSON.stringify(obj));`);
-      }
+      w.tab(2).writeln(`if (typeof globalThis.handleProxyError === 'function') {`);
+      w.tab(3).writeln(`globalThis.handleProxyError(proxyName, obj, { path: field.split('.'), expectedType: type, actualValue: d });`);
+      w.tab(2).writeln(`}`);
       w.tab(1).writeln(`}`);
-      if (process.argv.includes('-debug'))
-        w.tab(1).writeln(`throw new TypeError('Expected ' + type + " at " + field + " but found:\\n" + JSON.stringify(d) + "\\n\\nFull object:\\n" + JSON.stringify(obj));`);
       w.writeln(`}`);
     }
   }
