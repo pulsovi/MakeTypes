@@ -69,27 +69,36 @@ export class AnyShape extends Shape {
     }
     emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, }) {
         const writter = emitter.proxies;
-        // TODO: This is terrible.
         const distilledShapes = this.getDistilledShapes(emitter);
-        writter.tab(tabLevel).writeln(`// This will be refactored in the next release.`);
+        const baseFieldName = fieldName.slice(1, -1).split('.').pop();
+        writter.tab(tabLevel).writeln(`const ${baseFieldName}TypeCheckers = [`);
         distilledShapes.forEach((subShape, i) => {
-            writter.tab(tabLevel + i).writeln(`try {`);
+            writter.tab(tabLevel + 1).writeln(`() => {`);
             subShape.emitProxyTypeCheck({
                 emitter,
-                tabLevel: tabLevel + i + 1,
+                tabLevel: tabLevel + 2,
                 dataVar,
                 fieldName,
                 multiple: `"${this.getProxyType(emitter)}"`,
             });
-            writter.tab(tabLevel + i).writeln(`} catch (e) {`);
-            if (i === distilledShapes.length - 1) {
-                writter.tab(tabLevel + i + 1).writeln(`if (typeof globalThis.handleProxyError === 'function') {`);
-                writter.tab(tabLevel + i + 2).writeln(`globalThis.handleProxyError(proxyName, obj, { path: ${fieldName}.split('.'), expectedType: ${JSON.stringify(this.getProxyType(emitter))}, actualValue: ${dataVar} });`);
-                writter.tab(tabLevel + i + 1).writeln(`}`);
-            }
+            writter.tab(tabLevel + 1).writeln(`},`);
         });
-        for (let i = 0; i < distilledShapes.length; i++) {
-            writter.tab(tabLevel + (distilledShapes.length - i - 1)).writeln(`}`);
-        }
+        writter.tab(tabLevel).writeln(`];`);
+        writter.tab(tabLevel).writeln(`let ${baseFieldName}IsValid = false;`);
+        writter.tab(tabLevel).writeln(`for (let i = 0; i < ${baseFieldName}TypeCheckers.length; i++) {`);
+        writter.tab(tabLevel + 1).writeln(`try {`);
+        writter.tab(tabLevel + 2).writeln(`${baseFieldName}TypeCheckers[i]();`);
+        writter.tab(tabLevel + 2).writeln(`${baseFieldName}IsValid = true;`);
+        writter.tab(tabLevel + 1).writeln(`} catch (e) { /* Do nothing */ }`);
+        writter.tab(tabLevel).writeln(`}`);
+        writter.tab(tabLevel).writeln(`if (!${baseFieldName}IsValid) {`);
+        writter.tab(tabLevel + 1).writeln(`if (typeof globalThis.handleProxyError === 'function') {`);
+        writter.tab(tabLevel + 2).writeln(`globalThis.handleProxyError(proxyName, obj, {`);
+        writter.tab(tabLevel + 3).writeln(`path: ${fieldName}.split('.'),`);
+        writter.tab(tabLevel + 3).writeln(`expectedType: ${JSON.stringify(this.getProxyType(emitter))},`);
+        writter.tab(tabLevel + 3).writeln(`actualValue: ${dataVar},`);
+        writter.tab(tabLevel + 2).writeln(`});`);
+        writter.tab(tabLevel + 1).writeln(`}`);
+        writter.tab(tabLevel).writeln(`}`);
     }
 }

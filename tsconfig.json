@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "module": "nodenext",
+        "types": ["node"],
         "noUnusedLocals": true,
         "declaration": true,
         "outDir": "dist",
