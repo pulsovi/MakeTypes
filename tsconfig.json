@@ -8,4 +8,6 @@
         "rootDir": "lib",
         "skipLibCheck": true,
     },
+    "include": ["lib/**/*"],
+    "exclude": ["dist", "test", "node_modules"],
 }

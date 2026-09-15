@@ -4,5 +4,5 @@ export declare class NullShape extends Shape {
     get type(): BaseShape.NULL;
     emitType(e: Emitter): void;
     getProxyType(e: Emitter): string;
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, multiple }: EmitProxyTypeCheckArgs): void;
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, earlyReturnVar, asCheckMultiArm, }: EmitProxyTypeCheckArgs): void;
 }

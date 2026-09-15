@@ -58,7 +58,7 @@ export default class Emitter {
       this.proxies.tab(1).writeln(`public static Parse(s: string): ${rootShape.getProxyType(this)} {`);
       this.proxies.tab(2).writeln(`return ${rootName}${this.postfixProxy ? 'Proxy' : ''}.Create(JSON.parse(s));`);
       this.proxies.tab(1).writeln(`}`);
-      this.proxies.tab(1).writeln(`public static Create(s: any, fieldName?: string): ${rootShape.getProxyType(this)} {`);
+      this.proxies.tab(1).writeln(`public static Create(s: any, fieldName?: string, type?: string, shouldThrow: boolean = true): ${rootShape.getProxyType(this)} {`);
       this.proxies.tab(2).writeln(`if (!fieldName) {`);
       this.proxies.tab(3).writeln(`obj = s;`);
       this.proxies.tab(3).writeln(`fieldName = "root";`);
@@ -68,6 +68,8 @@ export default class Emitter {
         tabLevel: 2,
         dataVar: 's',
         fieldName: "fieldName",
+        shouldThrow: 'shouldThrow',
+        earlyReturnVar: 's',
       });
       if (rootShape.type !== BaseShape.NEVER) this.proxies.tab(2).writeln(`return s;`);
       this.proxies.tab(1).writeln(`}`);
@@ -98,72 +100,91 @@ export default class Emitter {
     const s = this._helpersToEmit;
     if (s.has('throwNull2NonNull')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function throwNull2NonNull(field: string, value: any, multiple?: string): void {`);
-      w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "non-nullable object");`);
+      w.writeln(`function throwNull2NonNull(field: string, value: any, type: string): void {`);
+      w.tab(1).writeln(`return errorHelper(field, value, type);`);
       w.writeln(`}`);
     }
     if (s.has('throwNotObject')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function throwNotObject(field: string, value: any, multiple?: string): void {`);
-      w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "object");`);
+      w.writeln(`function throwNotObject(field: string, value: any, type: string): void {`);
+      w.tab(1).writeln(`return errorHelper(field, value, type);`);
       w.writeln(`}`);
     }
     if (s.has('throwIsArray')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function throwIsArray(field: string, value: any, multiple?: string): void {`);
-      w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "object");`);
+      w.writeln(`function throwIsArray(field: string, value: any, type: string): void {`);
+      w.tab(1).writeln(`return errorHelper(field, value, type);`);
+      w.writeln(`}`);
+    }
+    if (s.has('checkRecord')) {
+      this.markHelperAsUsed("errorHelper");
+      w.writeln(`function checkRecord(value: any, field: string, type: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (typeof(value) === 'object' && value !== null && !Array.isArray(value)) return true;`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, type);`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('checkArray')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function checkArray(value: any, field: string, multiple?: string): void {`);
-      w.tab(1).writeln(`if (!Array.isArray(value)) errorHelper(field, value, multiple ?? "array");`);
+      w.writeln(`function checkArray(value: any, field: string, type: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (Array.isArray(value)) return true;`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, type);`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('checkNumber')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function checkNumber(value: any, field: string, multiple?: string): void {`)
-      w.tab(1).writeln(`if (typeof(value) !== 'number') errorHelper(field, value, multiple ?? "number");`);
+      w.writeln(`function checkNumber(value: any, field: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (typeof(value) === 'number') return true;`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, 'number');`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('checkBoolean')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function checkBoolean(value: any, field: string, multiple?: string): void {`);
-      w.tab(1).writeln(`if (typeof(value) !== 'boolean') errorHelper(field, value, multiple ?? "boolean");`);
+      w.writeln(`function checkBoolean(value: any, field: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (typeof(value) === 'boolean') return true;`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, 'boolean');`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('checkString')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function checkString(value: any, field: string, multiple?: string): void {`)
-      w.tab(1).writeln(`if (typeof(value) !== 'string') errorHelper(field, value, multiple ?? "string");`);
+      w.writeln(`function checkString(value: any, field: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (typeof(value) === 'string') return true;`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, 'string');`);
+      w.tab(1).writeln(`return false;`);
+      w.writeln(`}`);
+    }
+    if (s.has('checkMulti')) {
+      this.markHelperAsUsed("errorHelper");
+      w.writeln(`function checkMulti(checkers: (() => boolean)[], value: any, field: string, type: string, shouldThrow: boolean = true): boolean {`);
+      w.tab(1).writeln(`for (let i = 0; i < checkers.length; i++) {`);
+      w.tab(2).writeln(`if (checkers[i]()) return true;`);
+      w.tab(2).writeln(`}`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, type);`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('checkNull')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function checkNull(value: any, field: string, multiple?: string): void {`)
-      w.tab(1).writeln(`if (value !== null) errorHelper(field, value, multiple ?? "null");`);
+      w.writeln(`function checkNull(value: any, field: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (value === null) return true;`);
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, 'null');`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('checkNever')) {
       this.markHelperAsUsed("errorHelper");
-      w.writeln(`function checkNever(value: any, field: string, multiple?: string): void {`)
-      w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "never");`);
+      w.writeln(`function checkNever(value: any, field: string, shouldThrow: boolean = true): boolean {`)
+      w.tab(1).writeln(`if (shouldThrow) errorHelper(field, value, 'never');`);
+      w.tab(1).writeln(`return false;`);
       w.writeln(`}`);
     }
     if (s.has('errorHelper')) {
-      w.writeln(`function errorHelper(field: string, d: any, type: string): void {`);
-      w.tab(1).writeln(`if (type.includes(' | ')) {`);
-      w.tab(2).writeln(`throw new TypeError('Expected ' + type + " at " + field + " but found:\\n" + JSON.stringify(d) + "\\n\\nFull object:\\n" + JSON.stringify(obj));`);
-      w.tab(1).writeln(`} else {`);
-      w.tab(2).writeln(`let jsonClone = obj;`);
-      w.tab(2).writeln(`try {`);
-      w.tab(3).writeln(`jsonClone = structuredClone(obj);`);
-      w.tab(2).writeln(`} catch(error) {`);
-      w.tab(3).writeln(`console.log(error);`);
-      w.tab(2).writeln(`}`);
-      w.tab(2).writeln(`if (typeof globalThis.handleProxyError === 'function') {`);
-      w.tab(3).writeln(`globalThis.handleProxyError(proxyName, obj, { path: field.split('.'), expectedType: type, actualValue: d });`);
-      w.tab(2).writeln(`}`);
+      w.writeln(`function errorHelper(field: string, value: any, type: string): void {`);
+      w.tab(1).writeln(`if (typeof globalThis.handleProxyError === 'function') {`);
+      w.tab(2).writeln(`globalThis.handleProxyError(proxyName, obj, { path: field.split('.'), expectedType: type, actualValue: value });`);
       w.tab(1).writeln(`}`);
       w.writeln(`}`);
     }

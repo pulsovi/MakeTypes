@@ -20,6 +20,6 @@ export declare class CollectionShape extends Shape {
     getProxyType(e: Emitter): string;
     equal(t: Shape): t is typeof this;
     getName(e: Emitter): string;
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, multiple, }: EmitProxyTypeCheckArgs): void;
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, earlyReturnVar, asCheckMultiArm, }: EmitProxyTypeCheckArgs): void;
 }
 export {};

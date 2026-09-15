@@ -128,31 +128,37 @@ export class RecordShape extends Shape {
     w.tab(1).writeln(`public static Parse(d: string): ${this.getProxyType(e)} {`);
     w.tab(2).writeln(`return ${this.getProxyClass(e)}.Create(JSON.parse(d));`);
     w.tab(1).writeln(`}`);
-    w.tab(1).writeln(`public static Create(d: any, field?: string, multiple ?: string): ${this.getProxyType(e)} {`);
+    w.tab(1).writeln(`public static Create(d: any, field?: string, type?: string, shouldThrow: boolean = true): ${this.getProxyType(e)} {`);
     w.tab(2).writeln(`if (!field) {`);
     w.tab(3).writeln(`d = structuredClone(d);`);
     w.tab(3).writeln(`obj = d;`);
     w.tab(3).writeln(`field = "root";`);
     w.tab(2).writeln(`}`);
-    w.tab(2).writeln(`if (!d) {`);
-    e.markHelperAsUsed('throwNull2NonNull');
-    w.tab(3).writeln(`throwNull2NonNull(field, d, multiple ?? this.name);`);
-    w.tab(2).writeln(`} else if (typeof(d) !== 'object') {`);
-    e.markHelperAsUsed('throwNotObject');
-    w.tab(3).writeln(`throwNotObject(field, d);`);
-    w.tab(2).writeln(`} else if (Array.isArray(d)) {`)
-    e.markHelperAsUsed('throwIsArray');
-    w.tab(3).writeln(`throwIsArray(field, d);`);
-    w.tab(2).writeln(`}`);
+    e.markHelperAsUsed('checkRecord');
+    w.tab(2).writeln(`if (!checkRecord(d, field, type || "${this.getProxyClass(e)}", shouldThrow)) return d;`);
     // At this point, we know we have a non-null object.
     // Check all fields.
     this.forEachField((t, name) => {
       if (t.optional) {
         w.tab(2).writeln(`if (${JSON.stringify(name)} in d && typeof d[${JSON.stringify(name)}] !== 'undefined') {`);
-        t.emitProxyTypeCheck({ emitter: e, tabLevel: 3, dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
+        t.emitProxyTypeCheck({
+          emitter: e,
+          tabLevel: 3,
+          dataVar: safeObjectField('d', name),
+          fieldName: `field + ".${name}"`,
+          shouldThrow: 'shouldThrow',
+          earlyReturnVar: 'd',
+        });
         w.tab(2).writeln(`}`);
       } else {
-        t.emitProxyTypeCheck({ emitter: e, tabLevel: 2, dataVar: safeObjectField('d', name), fieldName: `field + ".${name}"` });
+        t.emitProxyTypeCheck({
+          emitter: e,
+          tabLevel: 2,
+          dataVar: safeObjectField('d', name),
+          fieldName: `field + ".${name}"`,
+          shouldThrow: 'shouldThrow',
+          earlyReturnVar: 'd',
+        });
       }
     });
 
@@ -161,7 +167,10 @@ export class RecordShape extends Shape {
     this.forEachField((t, name) => { fieldNames.push(name); });
     w.tab(2).writeln(`const knownProperties: string[] = ${JSON.stringify(fieldNames)};`);
     w.tab(2).writeln(`const unknownProperty = Object.keys(d).find(key => !knownProperties.includes(key));`);
-    w.tab(2).writeln(`if (unknownProperty) errorHelper(field + '.' + unknownProperty, d[unknownProperty], "never (unknown property)");`);
+    w.tab(2).writeln(`if (unknownProperty) {`);
+    w.tab(3).writeln(`if (shouldThrow) errorHelper(field + '.' + unknownProperty, d[unknownProperty], "never (unknown property)");`);
+    w.tab(3).writeln(`return d;`);
+    w.tab(2).writeln(`}`);
 
     // create instance
     w.tab(2).writeln(`return new ${this.getProxyClass(e)}(d);`);
@@ -208,8 +217,26 @@ export class RecordShape extends Shape {
     return this._name;
   }
 
-  public emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, multiple }: EmitProxyTypeCheckArgs): void {
-    emitter.proxies.tab(tabLevel)
-      .writeln(`${dataVar} = ${this.getProxyClass(emitter)}.Create(${dataVar}, ${fieldName}${multiple ? `, ${multiple}` : ''});`);
+  public emitProxyTypeCheck({
+    emitter,
+    tabLevel,
+    dataVar,
+    fieldName,
+    shouldThrow = true,
+    indentFirstLine = true,
+    type,
+    asCheckMultiArm = false,
+    earlyReturnVar,
+    abortRecordSoftFail = false,
+  }: EmitProxyTypeCheckArgs): void {
+    const proxyClass = this.getProxyClass(emitter);
+    const typeArg = type ?? 'undefined';
+    if (indentFirstLine) emitter.proxies.tab(tabLevel);
+    emitter.proxies.writeln(`${dataVar} = ${proxyClass}.Create(${dataVar}, ${fieldName}, ${typeArg}, ${shouldThrow});`);
+    if (asCheckMultiArm) {
+      emitter.proxies.tab(tabLevel).writeln(`return ${dataVar} instanceof ${proxyClass};`);
+    } else if (abortRecordSoftFail && earlyReturnVar) {
+      emitter.proxies.tab(tabLevel).writeln(`if (!(${dataVar} instanceof ${proxyClass})) return ${earlyReturnVar};`);
+    }
   }
 }

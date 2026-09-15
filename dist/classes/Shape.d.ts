@@ -19,7 +19,19 @@ export interface EmitProxyTypeCheckArgs {
     tabLevel: number;
     dataVar: string;
     fieldName: string;
-    multiple?: string;
+    shouldThrow?: boolean | string;
+    indentFirstLine?: boolean;
+    type?: string;
+    /** When set, a failed check emits `return ${earlyReturnVar}` for the Create continuum. */
+    earlyReturnVar?: string;
+    /** When true, emit a checkMulti arm that returns a boolean branch success. */
+    asCheckMultiArm?: boolean;
+    /**
+     * When true with earlyReturnVar, a nested record soft-fail aborts via
+     * `if (!(dataVar instanceof Proxy)) return earlyReturnVar` (collection checkMulti arms).
+     * Parent Create continua omit this so nested soft-fail stays local.
+     */
+    abortRecordSoftFail?: boolean;
 }
 export declare abstract class Shape {
     private _samples;

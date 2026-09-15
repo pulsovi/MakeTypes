@@ -83,22 +83,41 @@ export class CollectionShape extends Shape {
     tabLevel,
     dataVar,
     fieldName,
-    multiple,
+    shouldThrow = true,
+    indentFirstLine = true,
+    earlyReturnVar,
+    asCheckMultiArm = false,
   }: EmitProxyTypeCheckArgs): void {
     const writter = emitter.proxies;
+    const typeLabel = `${this.baseShape.getProxyType(emitter)}[]`;
 
     emitter.markHelperAsUsed('checkArray');
-    writter.tab(tabLevel).writeln(`checkArray(${dataVar}, ${fieldName}${multiple ? `, ${multiple}` : ''});`);
-    writter.tab(tabLevel).writeln(`if (${dataVar}) {`)
-    // Now, we check each element.
-    writter.tab(tabLevel + 1).writeln(`for (let i = 0; i < ${dataVar}.length; i++) {`)
+    if (indentFirstLine) writter.tab(tabLevel);
+    if (asCheckMultiArm) {
+      writter.writeln(`if (!checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) return false;`);
+    } else if (earlyReturnVar) {
+      writter.writeln(`if (!checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) return ${earlyReturnVar};`);
+    } else {
+      writter.writeln(`if (checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) {`);
+    }
+
+    const loopTab = (!asCheckMultiArm && !earlyReturnVar) ? tabLevel + 1 : tabLevel;
+    writter.tab(loopTab).writeln(`for (let i = 0; i < ${dataVar}.length; i++) {`)
     this.baseShape.emitProxyTypeCheck({
       emitter,
-      tabLevel: tabLevel + 2,
+      tabLevel: loopTab + 1,
       dataVar: `${dataVar}[i]`,
-      fieldName: `${fieldName} + "[" + i + "]"`
+      fieldName: `${fieldName} + "[" + i + "]"`,
+      shouldThrow,
+      earlyReturnVar: asCheckMultiArm ? 'false' : earlyReturnVar,
+      abortRecordSoftFail: asCheckMultiArm,
+      asCheckMultiArm: false,
     });
-    writter.tab(tabLevel + 1).writeln(`}`);
-    writter.tab(tabLevel).writeln(`}`);
+    writter.tab(loopTab).writeln(`}`);
+    if (asCheckMultiArm) {
+      writter.tab(tabLevel).writeln(`return true;`);
+    } else if (!earlyReturnVar) {
+      writter.tab(tabLevel).writeln(`}`);
+    }
   }
 }

@@ -31,5 +31,5 @@ export declare class RecordShape extends Shape {
     getReferencedRecordShapes(e: Emitter, rv: Set<RecordShape>): void;
     markAsRoot(name: string): void;
     getName(e: Emitter): string;
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, multiple }: EmitProxyTypeCheckArgs): void;
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, type, asCheckMultiArm, earlyReturnVar, abortRecordSoftFail, }: EmitProxyTypeCheckArgs): void;
 }

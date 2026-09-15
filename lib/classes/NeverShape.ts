@@ -26,8 +26,24 @@ export class NeverShape extends Shape {
     return "never";
   }
 
-  public emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, multiple }: EmitProxyTypeCheckArgs): void {
+  public emitProxyTypeCheck({
+    emitter,
+    tabLevel,
+    dataVar,
+    fieldName,
+    shouldThrow = true,
+    indentFirstLine = true,
+    earlyReturnVar,
+    asCheckMultiArm = false,
+  }: EmitProxyTypeCheckArgs): void {
     emitter.markHelperAsUsed('checkNever');
-    emitter.proxies.tab(tabLevel).writeln(`checkNever(${dataVar}, ${fieldName}${multiple ? `, ${multiple}` : ''});`);
+    if (indentFirstLine) emitter.proxies.tab(tabLevel);
+    if (asCheckMultiArm) {
+      emitter.proxies.writeln(`return checkNever(${dataVar}, ${fieldName}, ${shouldThrow});`);
+    } else if (earlyReturnVar) {
+      emitter.proxies.writeln(`if (!checkNever(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
+    } else {
+      emitter.proxies.writeln(`checkNever(${dataVar}, ${fieldName}, ${shouldThrow});`);
+    }
   }
 }

@@ -19,9 +19,19 @@ export class BooleanShape extends Shape {
     tabLevel,
     dataVar,
     fieldName,
-    multiple,
+    shouldThrow = true,
+    indentFirstLine = true,
+    earlyReturnVar,
+    asCheckMultiArm = false,
   }: EmitProxyTypeCheckArgs): void {
     emitter.markHelperAsUsed('checkBoolean');
-    emitter.proxies.tab(tabLevel).writeln(`checkBoolean(${dataVar}, ${fieldName}${multiple ? `, ${multiple}` : ''});`);
+    if (indentFirstLine) emitter.proxies.tab(tabLevel);
+    if (asCheckMultiArm) {
+      emitter.proxies.writeln(`return checkBoolean(${dataVar}, ${fieldName}, ${shouldThrow});`);
+    } else if (earlyReturnVar) {
+      emitter.proxies.writeln(`if (!checkBoolean(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
+    } else {
+      emitter.proxies.writeln(`checkBoolean(${dataVar}, ${fieldName}, ${shouldThrow});`);
+    }
   }
 }

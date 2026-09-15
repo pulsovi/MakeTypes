@@ -9,8 +9,18 @@ export class NumberShape extends Shape {
     getProxyType(e) {
         return "number";
     }
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, multiple }) {
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, earlyReturnVar, asCheckMultiArm = false, }) {
         emitter.markHelperAsUsed('checkNumber');
-        emitter.proxies.tab(tabLevel).writeln(`checkNumber(${dataVar}, ${fieldName}${multiple ? `, ${multiple}` : ''});`);
+        if (indentFirstLine)
+            emitter.proxies.tab(tabLevel);
+        if (asCheckMultiArm) {
+            emitter.proxies.writeln(`return checkNumber(${dataVar}, ${fieldName}, ${shouldThrow});`);
+        }
+        else if (earlyReturnVar) {
+            emitter.proxies.writeln(`if (!checkNumber(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
+        }
+        else {
+            emitter.proxies.writeln(`checkNumber(${dataVar}, ${fieldName}, ${shouldThrow});`);
+        }
     }
 }

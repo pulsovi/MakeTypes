@@ -101,9 +101,9 @@ Example TypeScript code using proxy class:
 ```typescript
 import {RootNameProxy} from './proxies';
 
-// Without globalThis.handleProxyError, Create does not throw on type mismatches.
+// Without globalThis.handleProxyError, Create soft-fails and returns the raw input on mismatch.
 const proxyObject = RootNameProxy.Parse('{"foo": "bar"}');
-// Now, you can access all of the properties of the JSON object with confidence that they
+// On success, you can access all of the properties of the JSON object with confidence that they
 // actually exist.
 let foo = proxyObject.foo; // TypeScript knows foo is a string
 // If one of the properties on the proxy is optional, then it will have a null value.
@@ -112,7 +112,7 @@ let baz = proxyObject.baz; // TypeScript knows baz is number | null. In this cas
 
 #### Runtime error handling with `globalThis.handleProxyError`
 
-By default, generated proxies **do not throw** when JSON does not match the expected type. They behave like an unchecked cast (`as unknown as RootNameProxy`): TypeScript still type-checks your code, but invalid data passes through at runtime without interrupting execution.
+By default, generated proxies **do not throw** when JSON does not match the expected type. On the first failed check in a `Create` continuum, if `handleProxyError` is unset (or returns without throwing), **`Create` returns the raw input value unchanged** — not a Proxy instance — and runs no further checks in that invocation. Only when every check succeeds does `Create` return a Proxy.
 
 To opt into runtime validation, assign a handler on `globalThis` **before** calling any proxy method:
 
@@ -142,7 +142,7 @@ The handler receives:
 * **`error.expectedType`** — the expected type at that path (e.g. `"string"`, or `"Foo | Bar"` for union fields).
 * **`error.actualValue`** — the value that failed validation at that path.
 
-What you do inside the handler is up to you: log, report to an observability service, collect errors, or re-throw. If `handleProxyError` is not defined, mismatches are silently ignored and the proxy is still returned.
+What you do inside the handler is up to you: log, report to an observability service, collect errors, or re-throw. If `handleProxyError` is not defined (or returns without throwing), mismatches are soft-failed: `Create` returns the raw input and does not construct a Proxy.
 
 ### Using Interfaces
 

@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "postinstall": "tsc"
+    "postinstall": "tsc",
+    "test": "yarn build && node --experimental-strip-types --test test/**/*.test.ts"
   },
   "keywords": [
     "TypeScript",
