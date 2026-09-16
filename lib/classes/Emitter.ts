@@ -114,6 +114,14 @@ export default class Emitter {
       w.tab(1).writeln(`return errorHelper(field, value, multiple ?? "object");`);
       w.writeln(`}`);
     }
+    if (s.has('checkRecord')) {
+      this.markHelperAsUsed("errorHelper");
+      w.writeln(`function checkRecord(value: any, field: string, type: string): boolean {`)
+      w.tab(1).writeln(`if (typeof(value) === 'object' && value !== null && !Array.isArray(value)) return true;`);
+      w.tab(1).writeln(`errorHelper(field, value, type);`);
+      w.tab(1).writeln(`return false;`);
+      w.writeln(`}`);
+    }
     if (s.has('checkArray')) {
       this.markHelperAsUsed("errorHelper");
       w.writeln(`function checkArray(value: any, field: string, multiple?: string): void {`);

@@ -134,16 +134,8 @@ export class RecordShape extends Shape {
     w.tab(3).writeln(`obj = d;`);
     w.tab(3).writeln(`field = "root";`);
     w.tab(2).writeln(`}`);
-    w.tab(2).writeln(`if (!d) {`);
-    e.markHelperAsUsed('throwNull2NonNull');
-    w.tab(3).writeln(`throwNull2NonNull(field, d, multiple ?? this.name);`);
-    w.tab(2).writeln(`} else if (typeof(d) !== 'object') {`);
-    e.markHelperAsUsed('throwNotObject');
-    w.tab(3).writeln(`throwNotObject(field, d);`);
-    w.tab(2).writeln(`} else if (Array.isArray(d)) {`)
-    e.markHelperAsUsed('throwIsArray');
-    w.tab(3).writeln(`throwIsArray(field, d);`);
-    w.tab(2).writeln(`}`);
+    e.markHelperAsUsed('checkRecord');
+    w.tab(2).writeln(`if (!checkRecord(d, field, "${this.getProxyClass(e)}")) return d;`);
     // At this point, we know we have a non-null object.
     // Check all fields.
     this.forEachField((t, name) => {
@@ -157,7 +149,7 @@ export class RecordShape extends Shape {
     });
 
     // disallow unknown fields
-    const fieldNames = [];
+    const fieldNames: string[] = [];
     this.forEachField((t, name) => { fieldNames.push(name); });
     w.tab(2).writeln(`const knownProperties: string[] = ${JSON.stringify(fieldNames)};`);
     w.tab(2).writeln(`const unknownProperty = Object.keys(d).find(key => !knownProperties.includes(key));`);
