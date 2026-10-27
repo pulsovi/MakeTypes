@@ -1,4 +1,4 @@
-import { emitCreateContinuum, } from "./CreateContinuumEmission.js";
+import { emitCreateContinuum, requireContinuumCheckMode, } from "./CreateContinuumEmission.js";
 import { Shape } from "./Shape.js";
 export class StringShape extends Shape {
     get type() {
@@ -14,7 +14,7 @@ export class StringShape extends Shape {
         emitCreateContinuum({
             writer: emitter.proxies,
             session: emitter,
-            mode: mode,
+            mode: requireContinuumCheckMode(mode),
             check: "checkString",
             dataVar,
             fieldName,

@@ -43,6 +43,40 @@ export type ContinuumCheckMode = Extract<
   { kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare' }
 >;
 
+/** Record nested Create continuation modes (assign Create + instanceof / abort / local). */
+export type ContinuumRecordNestedMode = Extract<
+  ContinuumMode,
+  { kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal' }
+>;
+
+/** Narrow polymorphic `ContinuumMode` to check modes; throw if a Record-nested mode was passed. */
+export function requireContinuumCheckMode(mode: ContinuumMode): ContinuumCheckMode {
+  if (
+    mode.kind === 'createEarlyReturn' ||
+    mode.kind === 'checkMultiArm' ||
+    mode.kind === 'bare'
+  ) {
+    return mode;
+  }
+  throw new Error(
+    `Create continuum: expected createEarlyReturn | checkMultiArm | bare, got ${mode.kind}`,
+  );
+}
+
+/** Narrow polymorphic `ContinuumMode` to Record nested modes; throw if a check mode was passed. */
+export function requireRecordNestedMode(mode: ContinuumMode): ContinuumRecordNestedMode {
+  if (
+    mode.kind === 'recordNestedMultiArm' ||
+    mode.kind === 'recordNestedAbort' ||
+    mode.kind === 'recordNestedLocal'
+  ) {
+    return mode;
+  }
+  throw new Error(
+    `Create continuum: expected recordNestedMultiArm | recordNestedAbort | recordNestedLocal, got ${mode.kind}`,
+  );
+}
+
 export type EmitCreateContinuumArgs =
   | (ContinuumSink & {
       mode: ContinuumCheckMode;
@@ -57,20 +91,14 @@ export type EmitCreateContinuumArgs =
       session: ContinuumHelperSession;
     })
   | (ContinuumSink & {
-      mode: Extract<
-        ContinuumMode,
-        { kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal' }
-      >;
+      mode: ContinuumRecordNestedMode;
       type?: string;
     });
 
 function isRecordNestedMode(
   args: EmitCreateContinuumArgs,
 ): args is ContinuumSink & {
-  mode: Extract<
-    ContinuumMode,
-    { kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal' }
-  >;
+  mode: ContinuumRecordNestedMode;
   type?: string;
 } {
   return (

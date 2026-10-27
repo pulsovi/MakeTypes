@@ -1,6 +1,7 @@
 import Context from "./Context.js";
 import {
   emitCreateContinuum,
+  requireContinuumCheckMode,
   type ContinuumCheckMode,
   type ContinuumMode,
 } from "./CreateContinuumEmission.js";
@@ -116,7 +117,7 @@ export class CollectionShape extends Shape {
   }: EmitProxyTypeCheckArgs): void {
     const writter = emitter.proxies;
     const typeArg = `"${this.baseShape.getProxyType(emitter)}[]"`;
-    const checkMode = mode as ContinuumCheckMode;
+    const checkMode = requireContinuumCheckMode(mode);
 
     // checkArray gate: Create / multi-arm use continuum early-return; bare keeps `if (checkArray) { … }` framing.
     if (checkMode.kind === "checkMultiArm") {

@@ -1,7 +1,7 @@
 import { getReferencedRecordShapes } from "../functions/getReferencedRecordShapes.js";
 import { safeField, safeInterfaceName, safeObjectField } from "../functions/sanitize.js";
 import { CollectionShape } from "./CollectionShape.js";
-import { emitCreateContinuum, } from "./CreateContinuumEmission.js";
+import { emitCreateContinuum, requireRecordNestedMode, } from "./CreateContinuumEmission.js";
 import { FieldContext } from "./FieldContext.js";
 import { NeverShape } from "./NeverShape.js";
 import { Shape } from "./Shape.js";
@@ -220,7 +220,7 @@ export class RecordShape extends Shape {
     emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, type, mode, }) {
         emitCreateContinuum({
             writer: emitter.proxies,
-            mode: mode,
+            mode: requireRecordNestedMode(mode),
             dataVar,
             fieldName,
             shouldThrow,

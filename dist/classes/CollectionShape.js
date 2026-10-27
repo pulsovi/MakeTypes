@@ -1,4 +1,4 @@
-import { emitCreateContinuum, } from "./CreateContinuumEmission.js";
+import { emitCreateContinuum, requireContinuumCheckMode, } from "./CreateContinuumEmission.js";
 import { EntityContext } from "./EntityContext.js";
 import { RecordShape } from "./RecordShape.js";
 import { Shape } from "./Shape.js";
@@ -80,7 +80,7 @@ export class CollectionShape extends Shape {
     emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, mode, }) {
         const writter = emitter.proxies;
         const typeArg = `"${this.baseShape.getProxyType(emitter)}[]"`;
-        const checkMode = mode;
+        const checkMode = requireContinuumCheckMode(mode);
         // checkArray gate: Create / multi-arm use continuum early-return; bare keeps `if (checkArray) { … }` framing.
         if (checkMode.kind === "checkMultiArm") {
             emitCreateContinuum({

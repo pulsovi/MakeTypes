@@ -4,6 +4,7 @@ import { CollectionShape } from "./CollectionShape.js";
 import Context from "./Context.js";
 import {
   emitCreateContinuum,
+  requireRecordNestedMode,
   type ContinuumMode,
 } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
@@ -246,15 +247,7 @@ export class RecordShape extends Shape {
   }: EmitProxyTypeCheckArgs): void {
     emitCreateContinuum({
       writer: emitter.proxies,
-      mode: mode as Extract<
-        ContinuumMode,
-        {
-          kind:
-            | "recordNestedMultiArm"
-            | "recordNestedAbort"
-            | "recordNestedLocal";
-        }
-      >,
+      mode: requireRecordNestedMode(mode),
       dataVar,
       fieldName,
       shouldThrow,

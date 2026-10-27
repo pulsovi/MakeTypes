@@ -1,3 +1,21 @@
+/** Narrow polymorphic `ContinuumMode` to check modes; throw if a Record-nested mode was passed. */
+export function requireContinuumCheckMode(mode) {
+    if (mode.kind === 'createEarlyReturn' ||
+        mode.kind === 'checkMultiArm' ||
+        mode.kind === 'bare') {
+        return mode;
+    }
+    throw new Error(`Create continuum: expected createEarlyReturn | checkMultiArm | bare, got ${mode.kind}`);
+}
+/** Narrow polymorphic `ContinuumMode` to Record nested modes; throw if a check mode was passed. */
+export function requireRecordNestedMode(mode) {
+    if (mode.kind === 'recordNestedMultiArm' ||
+        mode.kind === 'recordNestedAbort' ||
+        mode.kind === 'recordNestedLocal') {
+        return mode;
+    }
+    throw new Error(`Create continuum: expected recordNestedMultiArm | recordNestedAbort | recordNestedLocal, got ${mode.kind}`);
+}
 function isRecordNestedMode(args) {
     return (args.mode.kind === 'recordNestedMultiArm' ||
         args.mode.kind === 'recordNestedAbort' ||

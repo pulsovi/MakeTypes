@@ -1,6 +1,9 @@
 import { concateShapes } from "../functions/concateShapes.js";
 import { bottomShape } from "./BottomShape.js";
-import type { ContinuumCheckMode, ContinuumMode } from "./CreateContinuumEmission.js";
+import {
+  requireContinuumCheckMode,
+  type ContinuumMode,
+} from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { RecordShape } from "./RecordShape.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
@@ -96,7 +99,7 @@ export class AnyShape extends Shape {
     const writter = emitter.proxies;
     const distilledShapes = this.getDistilledShapes(emitter);
     const proxyType = JSON.stringify(this.getProxyType(emitter));
-    const checkMode = mode as ContinuumCheckMode;
+    const checkMode = requireContinuumCheckMode(mode);
     // checkMulti([…]) scaffolding stays here; arms receive checkMulti / Record nested multi-arm modes.
     emitter.markHelperAsUsed('checkMulti');
     if (checkMode.kind === "checkMultiArm") {

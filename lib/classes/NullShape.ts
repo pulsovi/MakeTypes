@@ -1,6 +1,6 @@
 import {
   emitCreateContinuum,
-  type ContinuumCheckMode,
+  requireContinuumCheckMode,
 } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
@@ -30,7 +30,7 @@ export class NullShape extends Shape {
     emitCreateContinuum({
       writer: emitter.proxies,
       session: emitter,
-      mode: mode as ContinuumCheckMode,
+      mode: requireContinuumCheckMode(mode),
       check: "checkNull",
       dataVar,
       fieldName,

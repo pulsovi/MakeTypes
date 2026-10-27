@@ -41,6 +41,14 @@ type ContinuumSink = {
 export type ContinuumCheckMode = Extract<ContinuumMode, {
     kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare';
 }>;
+/** Record nested Create continuation modes (assign Create + instanceof / abort / local). */
+export type ContinuumRecordNestedMode = Extract<ContinuumMode, {
+    kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal';
+}>;
+/** Narrow polymorphic `ContinuumMode` to check modes; throw if a Record-nested mode was passed. */
+export declare function requireContinuumCheckMode(mode: ContinuumMode): ContinuumCheckMode;
+/** Narrow polymorphic `ContinuumMode` to Record nested modes; throw if a check mode was passed. */
+export declare function requireRecordNestedMode(mode: ContinuumMode): ContinuumRecordNestedMode;
 export type EmitCreateContinuumArgs = (ContinuumSink & {
     mode: ContinuumCheckMode;
     check: ContinuumLeafCheckHelper;
@@ -52,9 +60,7 @@ export type EmitCreateContinuumArgs = (ContinuumSink & {
     type: string;
     session: ContinuumHelperSession;
 }) | (ContinuumSink & {
-    mode: Extract<ContinuumMode, {
-        kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal';
-    }>;
+    mode: ContinuumRecordNestedMode;
     type?: string;
 });
 /**
