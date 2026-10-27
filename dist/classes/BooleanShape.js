@@ -1,3 +1,4 @@
+import { emitCreateContinuum } from "./CreateContinuumEmission.js";
 import { Shape } from "./Shape.js";
 export class BooleanShape extends Shape {
     get type() {
@@ -10,17 +11,20 @@ export class BooleanShape extends Shape {
         return "boolean";
     }
     emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, earlyReturnVar, asCheckMultiArm = false, }) {
-        emitter.markHelperAsUsed('checkBoolean');
-        if (indentFirstLine)
-            emitter.proxies.tab(tabLevel);
-        if (asCheckMultiArm) {
-            emitter.proxies.writeln(`return checkBoolean(${dataVar}, ${fieldName}, ${shouldThrow});`);
-        }
-        else if (earlyReturnVar) {
-            emitter.proxies.writeln(`if (!checkBoolean(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
-        }
-        else {
-            emitter.proxies.writeln(`checkBoolean(${dataVar}, ${fieldName}, ${shouldThrow});`);
-        }
+        emitCreateContinuum({
+            writer: emitter.proxies,
+            session: emitter,
+            mode: asCheckMultiArm
+                ? { kind: "checkMultiArm" }
+                : earlyReturnVar
+                    ? { kind: "createEarlyReturn", returnBinding: earlyReturnVar }
+                    : { kind: "bare" },
+            check: "checkBoolean",
+            dataVar,
+            fieldName,
+            shouldThrow,
+            tabLevel,
+            indentFirstLine,
+        });
     }
 }

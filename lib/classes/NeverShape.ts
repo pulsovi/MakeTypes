@@ -1,3 +1,4 @@
+import { emitCreateContinuum } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
 
@@ -36,14 +37,20 @@ export class NeverShape extends Shape {
     earlyReturnVar,
     asCheckMultiArm = false,
   }: EmitProxyTypeCheckArgs): void {
-    emitter.markHelperAsUsed('checkNever');
-    if (indentFirstLine) emitter.proxies.tab(tabLevel);
-    if (asCheckMultiArm) {
-      emitter.proxies.writeln(`return checkNever(${dataVar}, ${fieldName}, ${shouldThrow});`);
-    } else if (earlyReturnVar) {
-      emitter.proxies.writeln(`if (!checkNever(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
-    } else {
-      emitter.proxies.writeln(`checkNever(${dataVar}, ${fieldName}, ${shouldThrow});`);
-    }
+    emitCreateContinuum({
+      writer: emitter.proxies,
+      session: emitter,
+      mode: asCheckMultiArm
+        ? { kind: "checkMultiArm" }
+        : earlyReturnVar
+          ? { kind: "createEarlyReturn", returnBinding: earlyReturnVar }
+          : { kind: "bare" },
+      check: "checkNever",
+      dataVar,
+      fieldName,
+      shouldThrow,
+      tabLevel,
+      indentFirstLine,
+    });
   }
 }

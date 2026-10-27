@@ -1,3 +1,4 @@
+import { emitCreateContinuum } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
 
@@ -24,14 +25,20 @@ export class NullShape extends Shape {
     earlyReturnVar,
     asCheckMultiArm = false,
   }: EmitProxyTypeCheckArgs): void {
-    emitter.markHelperAsUsed('checkNull');
-    if (indentFirstLine) emitter.proxies.tab(tabLevel);
-    if (asCheckMultiArm) {
-      emitter.proxies.writeln(`return checkNull(${dataVar}, ${fieldName}, ${shouldThrow});`);
-    } else if (earlyReturnVar) {
-      emitter.proxies.writeln(`if (!checkNull(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
-    } else {
-      emitter.proxies.writeln(`checkNull(${dataVar}, ${fieldName}, ${shouldThrow});`);
-    }
+    emitCreateContinuum({
+      writer: emitter.proxies,
+      session: emitter,
+      mode: asCheckMultiArm
+        ? { kind: "checkMultiArm" }
+        : earlyReturnVar
+          ? { kind: "createEarlyReturn", returnBinding: earlyReturnVar }
+          : { kind: "bare" },
+      check: "checkNull",
+      dataVar,
+      fieldName,
+      shouldThrow,
+      tabLevel,
+      indentFirstLine,
+    });
   }
 }
