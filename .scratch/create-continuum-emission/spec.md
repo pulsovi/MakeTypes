@@ -1,6 +1,6 @@
 # Create continuum emission module
-**Status:** open
-**Triage:** ready-for-agent
+**Status:** delivered
+**Delivered:** 2026-10-27
 **Labels:** `enhancement`
 
 ## Problem Statement
@@ -71,3 +71,8 @@ PHILOSOPHY: `prefer-continuum-emission-locality` · PHILOSOPHY: `prefer-expand-c
 
 - Seams for implementation tickets should prefer the continuum Writer seam for new continuum behaviours; use e2e Create only where the ticket claims an ADR-0001 runtime guarantee.
 - Wide refactor: do not force flag deletion into the first vertical slice — expand first, migrate in batches, contract last.
+
+## Comments
+
+**2026-10-27 — Delivered**
+Child tickets 01–05 delivered (expand continuum module → leaf / Collection+Any / Record migrate → mode contract). Integration review vs `master` applied mode-narrowing guards (`requireContinuumCheckMode` / `requireRecordNestedMode`). Validated with `node node_modules/typescript/bin/tsc && node --experimental-strip-types --test test/**/*.test.ts` (60 pass). Proxy Create body scaffolding remains out of scope.
