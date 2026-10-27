@@ -84,6 +84,9 @@ export class AnyShape extends Shape {
   }: EmitProxyTypeCheckArgs): void {
     const writter = emitter.proxies;
     const distilledShapes = this.getDistilledShapes(emitter);
+    const proxyType = JSON.stringify(this.getProxyType(emitter));
+    // checkMulti([…]) scaffolding stays here; arms call emitProxyTypeCheck as checkMulti arms
+    // (leaf/Collection continuation reaches the continuum module through that entry).
     emitter.markHelperAsUsed('checkMulti');
     if (asCheckMultiArm) {
       writter.tab(tabLevel).write(`return `);
@@ -102,17 +105,17 @@ export class AnyShape extends Shape {
         fieldName,
         shouldThrow: false,
         indentFirstLine: true,
-        type: JSON.stringify(this.getProxyType(emitter)),
+        type: proxyType,
         asCheckMultiArm: true,
       });
       writter.tab(tabLevel + 1).writeln(`},`);
     });
     if (asCheckMultiArm) {
-      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${JSON.stringify(this.getProxyType(emitter))}, ${shouldThrow});`);
+      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${proxyType}, ${shouldThrow});`);
     } else if (earlyReturnVar) {
-      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${JSON.stringify(this.getProxyType(emitter))}, ${shouldThrow})) return ${earlyReturnVar};`);
+      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${proxyType}, ${shouldThrow})) return ${earlyReturnVar};`);
     } else {
-      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${JSON.stringify(this.getProxyType(emitter))}, ${shouldThrow});`);
+      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${proxyType}, ${shouldThrow});`);
     }
   }
 }

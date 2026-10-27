@@ -3,8 +3,10 @@ import type Writer from './Writer.js';
 export interface ContinuumHelperSession {
     markHelperAsUsed(name: string): void;
 }
-/** Primitive / leaf helpers the Create continuum can emit as `check*` calls. */
-export type ContinuumCheckHelper = 'checkString' | 'checkNumber' | 'checkBoolean' | 'checkNull' | 'checkNever';
+/** Leaf helpers the Create continuum can emit as three-arg `check*` calls. */
+export type ContinuumLeafCheckHelper = 'checkString' | 'checkNumber' | 'checkBoolean' | 'checkNull' | 'checkNever';
+/** Helpers the Create continuum can emit as `check*` calls (leaf or array). */
+export type ContinuumCheckHelper = ContinuumLeafCheckHelper | 'checkArray';
 /**
  * Closed Create continuum continuation modes.
  * Callers pick a mode; the continuum owns early-return / multi-arm / bare / nested-record motifs.
@@ -32,11 +34,18 @@ type ContinuumSink = {
     tabLevel?: number;
     indentFirstLine?: boolean;
 };
+type ContinuumCheckMode = Extract<ContinuumMode, {
+    kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare';
+}>;
 export type EmitCreateContinuumArgs = (ContinuumSink & {
-    mode: Extract<ContinuumMode, {
-        kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare';
-    }>;
-    check: ContinuumCheckHelper;
+    mode: ContinuumCheckMode;
+    check: ContinuumLeafCheckHelper;
+    session: ContinuumHelperSession;
+}) | (ContinuumSink & {
+    mode: ContinuumCheckMode;
+    check: 'checkArray';
+    /** Third `checkArray` argument expression (e.g. `"string[]"`). */
+    type: string;
     session: ContinuumHelperSession;
 }) | (ContinuumSink & {
     mode: Extract<ContinuumMode, {

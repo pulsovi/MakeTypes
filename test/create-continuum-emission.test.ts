@@ -181,4 +181,49 @@ describe('Continuum emission', () => {
 
     assert.deepEqual(marked, ['checkNumber']);
   });
+
+  it('Create early-return mode emits a failed checkArray early-return with type label and return binding', () => {
+    const { writer, output } = captureWriter();
+    const { session, marked } = markingSession();
+
+    emitCreateContinuum({
+      writer,
+      session,
+      mode: { kind: 'createEarlyReturn', returnBinding: 'd' },
+      check: 'checkArray',
+      type: '"string[]"',
+      dataVar: 'items',
+      fieldName: 'field + ".items"',
+      shouldThrow: 'shouldThrow',
+      tabLevel: 0,
+    });
+
+    assert.equal(
+      output(),
+      'if (!checkArray(items, field + ".items", "string[]", shouldThrow)) return d;\n',
+    );
+    assert.deepEqual(marked, ['checkArray']);
+  });
+
+  it('checkMulti arm style checkArray failure early-returns false with type label', () => {
+    const { writer, output } = captureWriter();
+    const { session } = markingSession();
+
+    emitCreateContinuum({
+      writer,
+      session,
+      mode: { kind: 'createEarlyReturn', returnBinding: 'false' },
+      check: 'checkArray',
+      type: '"string[]"',
+      dataVar: 'v',
+      fieldName: '"root"',
+      shouldThrow: false,
+      tabLevel: 0,
+    });
+
+    assert.equal(
+      output(),
+      'if (!checkArray(v, "root", "string[]", false)) return false;\n',
+    );
+  });
 });

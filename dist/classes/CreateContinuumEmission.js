@@ -29,7 +29,9 @@ export function emitCreateContinuum(args) {
     session.markHelperAsUsed(check);
     if (indentFirstLine)
         writer.tab(tabLevel);
-    const call = `${check}(${dataVar}, ${fieldName}, ${shouldThrow})`;
+    const call = check === 'checkArray'
+        ? `checkArray(${dataVar}, ${fieldName}, ${args.type}, ${shouldThrow})`
+        : `${check}(${dataVar}, ${fieldName}, ${shouldThrow})`;
     if (mode.kind === 'checkMultiArm') {
         writer.writeln(`return ${call};`);
     }

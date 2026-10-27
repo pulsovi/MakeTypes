@@ -5,13 +5,16 @@ export interface ContinuumHelperSession {
   markHelperAsUsed(name: string): void;
 }
 
-/** Primitive / leaf helpers the Create continuum can emit as `check*` calls. */
-export type ContinuumCheckHelper =
+/** Leaf helpers the Create continuum can emit as three-arg `check*` calls. */
+export type ContinuumLeafCheckHelper =
   | 'checkString'
   | 'checkNumber'
   | 'checkBoolean'
   | 'checkNull'
   | 'checkNever';
+
+/** Helpers the Create continuum can emit as `check*` calls (leaf or array). */
+export type ContinuumCheckHelper = ContinuumLeafCheckHelper | 'checkArray';
 
 /**
  * Closed Create continuum continuation modes.
@@ -33,10 +36,22 @@ type ContinuumSink = {
   indentFirstLine?: boolean;
 };
 
+type ContinuumCheckMode = Extract<
+  ContinuumMode,
+  { kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare' }
+>;
+
 export type EmitCreateContinuumArgs =
   | (ContinuumSink & {
-      mode: Extract<ContinuumMode, { kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare' }>;
-      check: ContinuumCheckHelper;
+      mode: ContinuumCheckMode;
+      check: ContinuumLeafCheckHelper;
+      session: ContinuumHelperSession;
+    })
+  | (ContinuumSink & {
+      mode: ContinuumCheckMode;
+      check: 'checkArray';
+      /** Third `checkArray` argument expression (e.g. `"string[]"`). */
+      type: string;
       session: ContinuumHelperSession;
     })
   | (ContinuumSink & {
@@ -86,7 +101,10 @@ export function emitCreateContinuum(args: EmitCreateContinuumArgs): void {
   const { writer, session, check, dataVar, fieldName, mode } = args;
   session.markHelperAsUsed(check);
   if (indentFirstLine) writer.tab(tabLevel);
-  const call = `${check}(${dataVar}, ${fieldName}, ${shouldThrow})`;
+  const call =
+    check === 'checkArray'
+      ? `checkArray(${dataVar}, ${fieldName}, ${args.type}, ${shouldThrow})`
+      : `${check}(${dataVar}, ${fieldName}, ${shouldThrow})`;
   if (mode.kind === 'checkMultiArm') {
     writer.writeln(`return ${call};`);
   } else if (mode.kind === 'createEarlyReturn') {

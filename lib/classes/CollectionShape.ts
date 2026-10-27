@@ -1,4 +1,5 @@
 import Context from "./Context.js";
+import { emitCreateContinuum } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { EntityContext } from "./EntityContext.js";
 import { RecordShape } from "./RecordShape.js";
@@ -89,18 +90,32 @@ export class CollectionShape extends Shape {
     asCheckMultiArm = false,
   }: EmitProxyTypeCheckArgs): void {
     const writter = emitter.proxies;
-    const typeLabel = `${this.baseShape.getProxyType(emitter)}[]`;
+    const typeArg = `"${this.baseShape.getProxyType(emitter)}[]"`;
 
-    emitter.markHelperAsUsed('checkArray');
-    if (indentFirstLine) writter.tab(tabLevel);
-    if (asCheckMultiArm) {
-      writter.writeln(`if (!checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) return false;`);
-    } else if (earlyReturnVar) {
-      writter.writeln(`if (!checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) return ${earlyReturnVar};`);
+    // checkArray gate: Create / multi-arm use continuum early-return; bare keeps `if (checkArray) { … }` framing.
+    const arrayReturnBinding = asCheckMultiArm ? 'false' : earlyReturnVar;
+    if (arrayReturnBinding) {
+      emitCreateContinuum({
+        writer: writter,
+        session: emitter,
+        mode: { kind: 'createEarlyReturn', returnBinding: arrayReturnBinding },
+        check: 'checkArray',
+        type: typeArg,
+        dataVar,
+        fieldName,
+        shouldThrow,
+        tabLevel,
+        indentFirstLine,
+      });
     } else {
-      writter.writeln(`if (checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) {`);
+      emitter.markHelperAsUsed('checkArray');
+      if (indentFirstLine) writter.tab(tabLevel);
+      writter.writeln(
+        `if (checkArray(${dataVar}, ${fieldName}, ${typeArg}, ${shouldThrow})) {`,
+      );
     }
 
+    // Element loop framing stays here; child checks go through continuum via emitProxyTypeCheck.
     const loopTab = (!asCheckMultiArm && !earlyReturnVar) ? tabLevel + 1 : tabLevel;
     writter.tab(loopTab).writeln(`for (let i = 0; i < ${dataVar}.length; i++) {`)
     this.baseShape.emitProxyTypeCheck({
