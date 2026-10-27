@@ -1,3 +1,4 @@
+import type { ContinuumMode } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 
 /**
@@ -24,16 +25,8 @@ export interface EmitProxyTypeCheckArgs {
   shouldThrow?: boolean | string;
   indentFirstLine?: boolean;
   type?: string;
-  /** When set, a failed check emits `return ${earlyReturnVar}` for the Create continuum. */
-  earlyReturnVar?: string;
-  /** When true, emit a checkMulti arm that returns a boolean branch success. */
-  asCheckMultiArm?: boolean;
-  /**
-   * When true with earlyReturnVar, a nested record soft-fail aborts via
-   * `if (!(dataVar instanceof Proxy)) return earlyReturnVar` (collection checkMulti arms).
-   * Parent Create continua omit this so nested soft-fail stays local.
-   */
-  abortRecordSoftFail?: boolean;
+  /** Closed Create continuum continuation mode (callers pick; continuum owns motifs). */
+  mode: ContinuumMode;
 }
 
 export abstract class Shape {

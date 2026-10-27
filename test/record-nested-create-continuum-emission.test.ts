@@ -41,7 +41,7 @@ describe('Record nested Create continuum', () => {
       dataVar: 'item',
       fieldName: 'field + "[i]"',
       shouldThrow: false,
-      asCheckMultiArm: true,
+      mode: { kind: 'recordNestedMultiArm', proxyClass: record.getProxyClass(emitter) },
     });
 
     assert.equal(
@@ -61,8 +61,11 @@ describe('Record nested Create continuum', () => {
       dataVar: 'el',
       fieldName: 'field + "[0]"',
       shouldThrow: 'shouldThrow',
-      earlyReturnVar: 'false',
-      abortRecordSoftFail: true,
+      mode: {
+        kind: 'recordNestedAbort',
+        proxyClass: record.getProxyClass(emitter),
+        returnBinding: 'false',
+      },
     });
 
     assert.equal(
@@ -82,7 +85,7 @@ describe('Record nested Create continuum', () => {
       dataVar: 'd["addr"]',
       fieldName: 'field + ".addr"',
       shouldThrow: 'shouldThrow',
-      earlyReturnVar: 'd',
+      mode: { kind: 'recordNestedLocal', proxyClass: record.getProxyClass(emitter) },
     });
 
     assert.equal(

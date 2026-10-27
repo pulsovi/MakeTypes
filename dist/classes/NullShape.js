@@ -1,4 +1,4 @@
-import { emitCreateContinuum } from "./CreateContinuumEmission.js";
+import { emitCreateContinuum, } from "./CreateContinuumEmission.js";
 import { Shape } from "./Shape.js";
 export class NullShape extends Shape {
     get type() {
@@ -10,15 +10,11 @@ export class NullShape extends Shape {
     getProxyType(e) {
         return "null";
     }
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, earlyReturnVar, asCheckMultiArm = false, }) {
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, mode, }) {
         emitCreateContinuum({
             writer: emitter.proxies,
             session: emitter,
-            mode: asCheckMultiArm
-                ? { kind: "checkMultiArm" }
-                : earlyReturnVar
-                    ? { kind: "createEarlyReturn", returnBinding: earlyReturnVar }
-                    : { kind: "bare" },
+            mode: mode,
             check: "checkNull",
             dataVar,
             fieldName,

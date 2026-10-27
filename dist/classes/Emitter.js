@@ -64,7 +64,7 @@ export default class Emitter {
                 dataVar: 's',
                 fieldName: "fieldName",
                 shouldThrow: 'shouldThrow',
-                earlyReturnVar: 's',
+                mode: { kind: 'createEarlyReturn', returnBinding: 's' },
             });
             if (rootShape.type !== 8 /* BaseShape.NEVER */)
                 this.proxies.tab(2).writeln(`return s;`);

@@ -4,5 +4,5 @@ export declare class StringShape extends Shape {
     get type(): BaseShape.STRING;
     emitType(emitter: Emitter): void;
     getProxyType(): string;
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, earlyReturnVar, asCheckMultiArm, }: EmitProxyTypeCheckArgs): void;
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, mode, }: EmitProxyTypeCheckArgs): void;
 }

@@ -4,5 +4,5 @@ export declare class BooleanShape extends Shape {
     get type(): BaseShape.BOOLEAN;
     emitType(e: Emitter): void;
     getProxyType(e: Emitter): string;
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, earlyReturnVar, asCheckMultiArm, }: EmitProxyTypeCheckArgs): void;
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, indentFirstLine, mode, }: EmitProxyTypeCheckArgs): void;
 }

@@ -2,11 +2,27 @@ import { getReferencedRecordShapes } from "../functions/getReferencedRecordShape
 import { safeField, safeInterfaceName, safeObjectField } from "../functions/sanitize.js";
 import { CollectionShape } from "./CollectionShape.js";
 import Context from "./Context.js";
-import { emitCreateContinuum } from "./CreateContinuumEmission.js";
+import {
+  emitCreateContinuum,
+  type ContinuumMode,
+} from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { FieldContext } from "./FieldContext.js";
 import { NeverShape } from "./NeverShape.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
+
+function continuumModeForRecordField(
+  fieldShape: Shape,
+  emitter: Emitter,
+): ContinuumMode {
+  if (fieldShape instanceof RecordShape) {
+    return {
+      kind: "recordNestedLocal",
+      proxyClass: fieldShape.getProxyClass(emitter),
+    };
+  }
+  return { kind: "createEarlyReturn", returnBinding: "d" };
+}
 
 export interface RecordShapeOptions extends Partial<RecordShape> {
   fields: Map<string, Shape>;
@@ -148,7 +164,7 @@ export class RecordShape extends Shape {
           dataVar: safeObjectField('d', name),
           fieldName: `field + ".${name}"`,
           shouldThrow: 'shouldThrow',
-          earlyReturnVar: 'd',
+          mode: continuumModeForRecordField(t, e),
         });
         w.tab(2).writeln(`}`);
       } else {
@@ -158,7 +174,7 @@ export class RecordShape extends Shape {
           dataVar: safeObjectField('d', name),
           fieldName: `field + ".${name}"`,
           shouldThrow: 'shouldThrow',
-          earlyReturnVar: 'd',
+          mode: continuumModeForRecordField(t, e),
         });
       }
     });
@@ -226,22 +242,19 @@ export class RecordShape extends Shape {
     shouldThrow = true,
     indentFirstLine = true,
     type,
-    asCheckMultiArm = false,
-    earlyReturnVar,
-    abortRecordSoftFail = false,
+    mode,
   }: EmitProxyTypeCheckArgs): void {
-    const proxyClass = this.getProxyClass(emitter);
     emitCreateContinuum({
       writer: emitter.proxies,
-      mode: asCheckMultiArm
-        ? { kind: "recordNestedMultiArm", proxyClass }
-        : abortRecordSoftFail && earlyReturnVar
-          ? {
-              kind: "recordNestedAbort",
-              proxyClass,
-              returnBinding: earlyReturnVar,
-            }
-          : { kind: "recordNestedLocal", proxyClass },
+      mode: mode as Extract<
+        ContinuumMode,
+        {
+          kind:
+            | "recordNestedMultiArm"
+            | "recordNestedAbort"
+            | "recordNestedLocal";
+        }
+      >,
       dataVar,
       fieldName,
       shouldThrow,

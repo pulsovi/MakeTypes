@@ -81,7 +81,7 @@ describe('Leaf emitProxyTypeCheck', () => {
         dataVar: 'x',
         fieldName: 'field + ".name"',
         shouldThrow: 'shouldThrow',
-        earlyReturnVar: 'd',
+        mode: { kind: 'createEarlyReturn', returnBinding: 'd' },
       });
 
       assert.equal(output(), earlyReturn);
@@ -96,7 +96,7 @@ describe('Leaf emitProxyTypeCheck', () => {
         dataVar: 'v',
         fieldName: '"root"',
         shouldThrow: false,
-        asCheckMultiArm: true,
+        mode: { kind: 'checkMultiArm' },
       });
 
       assert.equal(output(), checkMultiArm);
@@ -111,6 +111,7 @@ describe('Leaf emitProxyTypeCheck', () => {
         dataVar: 's',
         fieldName: 'fieldName',
         shouldThrow: true,
+        mode: { kind: 'bare' },
       });
 
       assert.equal(output(), bare);

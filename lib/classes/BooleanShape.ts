@@ -1,4 +1,7 @@
-import { emitCreateContinuum } from "./CreateContinuumEmission.js";
+import {
+  emitCreateContinuum,
+  type ContinuumCheckMode,
+} from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
 
@@ -22,17 +25,12 @@ export class BooleanShape extends Shape {
     fieldName,
     shouldThrow = true,
     indentFirstLine = true,
-    earlyReturnVar,
-    asCheckMultiArm = false,
+    mode,
   }: EmitProxyTypeCheckArgs): void {
     emitCreateContinuum({
       writer: emitter.proxies,
       session: emitter,
-      mode: asCheckMultiArm
-        ? { kind: "checkMultiArm" }
-        : earlyReturnVar
-          ? { kind: "createEarlyReturn", returnBinding: earlyReturnVar }
-          : { kind: "bare" },
+      mode: mode as ContinuumCheckMode,
       check: "checkBoolean",
       dataVar,
       fieldName,

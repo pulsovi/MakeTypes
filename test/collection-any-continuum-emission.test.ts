@@ -48,7 +48,7 @@ describe('Collection continuum emission', () => {
       dataVar: 'items',
       fieldName: 'field + ".items"',
       shouldThrow: 'shouldThrow',
-      earlyReturnVar: 'd',
+      mode: { kind: 'createEarlyReturn', returnBinding: 'd' },
     });
 
     assert.equal(
@@ -72,7 +72,7 @@ describe('Collection continuum emission', () => {
       dataVar: 'v',
       fieldName: '"root"',
       shouldThrow: false,
-      asCheckMultiArm: true,
+      mode: { kind: 'checkMultiArm' },
     });
 
     assert.equal(
@@ -95,6 +95,7 @@ describe('Collection continuum emission', () => {
       dataVar: 's',
       fieldName: 'fieldName',
       shouldThrow: true,
+      mode: { kind: 'bare' },
     });
 
     assert.equal(
@@ -119,7 +120,7 @@ describe('Collection continuum emission', () => {
       dataVar: 'items',
       fieldName: 'field + ".items"',
       shouldThrow: 'shouldThrow',
-      earlyReturnVar: 'd',
+      mode: { kind: 'createEarlyReturn', returnBinding: 'd' },
     });
 
     assert.equal(
@@ -142,7 +143,7 @@ describe('Any continuum emission', () => {
       dataVar: 'x',
       fieldName: 'field + ".v"',
       shouldThrow: 'shouldThrow',
-      earlyReturnVar: 'd',
+      mode: { kind: 'createEarlyReturn', returnBinding: 'd' },
     });
 
     assert.equal(
@@ -167,7 +168,7 @@ describe('Any continuum emission', () => {
       dataVar: 'v',
       fieldName: '"root"',
       shouldThrow: false,
-      asCheckMultiArm: true,
+      mode: { kind: 'checkMultiArm' },
     });
 
     assert.equal(
@@ -192,6 +193,7 @@ describe('Any continuum emission', () => {
       dataVar: 's',
       fieldName: 'fieldName',
       shouldThrow: true,
+      mode: { kind: 'bare' },
     });
 
     assert.equal(

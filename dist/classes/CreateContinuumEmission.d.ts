@@ -37,7 +37,8 @@ type ContinuumSink = {
     tabLevel?: number;
     indentFirstLine?: boolean;
 };
-type ContinuumCheckMode = Extract<ContinuumMode, {
+/** Leaf / Collection / Any scaffolding modes (not Record nested Create). */
+export type ContinuumCheckMode = Extract<ContinuumMode, {
     kind: 'createEarlyReturn' | 'checkMultiArm' | 'bare';
 }>;
 export type EmitCreateContinuumArgs = (ContinuumSink & {
