@@ -25,7 +25,8 @@ export type ContinuumMode =
   | { kind: 'checkMultiArm' }
   | { kind: 'bare' }
   | { kind: 'recordNestedMultiArm'; proxyClass: string }
-  | { kind: 'recordNestedAbort'; proxyClass: string; returnBinding: string };
+  | { kind: 'recordNestedAbort'; proxyClass: string; returnBinding: string }
+  | { kind: 'recordNestedLocal'; proxyClass: string };
 
 type ContinuumSink = {
   writer: Writer;
@@ -55,18 +56,26 @@ export type EmitCreateContinuumArgs =
       session: ContinuumHelperSession;
     })
   | (ContinuumSink & {
-      mode: Extract<ContinuumMode, { kind: 'recordNestedMultiArm' | 'recordNestedAbort' }>;
+      mode: Extract<
+        ContinuumMode,
+        { kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal' }
+      >;
       type?: string;
     });
 
 function isRecordNestedMode(
   args: EmitCreateContinuumArgs,
 ): args is ContinuumSink & {
-  mode: Extract<ContinuumMode, { kind: 'recordNestedMultiArm' | 'recordNestedAbort' }>;
+  mode: Extract<
+    ContinuumMode,
+    { kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal' }
+  >;
   type?: string;
 } {
   return (
-    args.mode.kind === 'recordNestedMultiArm' || args.mode.kind === 'recordNestedAbort'
+    args.mode.kind === 'recordNestedMultiArm' ||
+    args.mode.kind === 'recordNestedAbort' ||
+    args.mode.kind === 'recordNestedLocal'
   );
 }
 
@@ -88,7 +97,7 @@ export function emitCreateContinuum(args: EmitCreateContinuumArgs): void {
     );
     if (mode.kind === 'recordNestedMultiArm') {
       writer.tab(tabLevel).writeln(`return ${dataVar} instanceof ${mode.proxyClass};`);
-    } else {
+    } else if (mode.kind === 'recordNestedAbort') {
       writer
         .tab(tabLevel)
         .writeln(

@@ -165,6 +165,24 @@ describe('Continuum emission', () => {
     );
   });
 
+  it('Record nested Create local mode emits assign-Create only (no instanceof abort)', () => {
+    const { writer, output } = captureWriter();
+
+    emitCreateContinuum({
+      writer,
+      mode: { kind: 'recordNestedLocal', proxyClass: 'AddressProxy' },
+      dataVar: 'd["addr"]',
+      fieldName: 'field + ".addr"',
+      shouldThrow: 'shouldThrow',
+      tabLevel: 0,
+    });
+
+    assert.equal(
+      output(),
+      'd["addr"] = AddressProxy.Create(d["addr"], field + ".addr", undefined, shouldThrow);\n',
+    );
+  });
+
   it('emitting a check* marks that helper as used on the emission session', () => {
     const { writer } = captureWriter();
     const { session, marked } = markingSession();

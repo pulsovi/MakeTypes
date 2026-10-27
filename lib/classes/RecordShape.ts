@@ -2,6 +2,7 @@ import { getReferencedRecordShapes } from "../functions/getReferencedRecordShape
 import { safeField, safeInterfaceName, safeObjectField } from "../functions/sanitize.js";
 import { CollectionShape } from "./CollectionShape.js";
 import Context from "./Context.js";
+import { emitCreateContinuum } from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { FieldContext } from "./FieldContext.js";
 import { NeverShape } from "./NeverShape.js";
@@ -230,13 +231,23 @@ export class RecordShape extends Shape {
     abortRecordSoftFail = false,
   }: EmitProxyTypeCheckArgs): void {
     const proxyClass = this.getProxyClass(emitter);
-    const typeArg = type ?? 'undefined';
-    if (indentFirstLine) emitter.proxies.tab(tabLevel);
-    emitter.proxies.writeln(`${dataVar} = ${proxyClass}.Create(${dataVar}, ${fieldName}, ${typeArg}, ${shouldThrow});`);
-    if (asCheckMultiArm) {
-      emitter.proxies.tab(tabLevel).writeln(`return ${dataVar} instanceof ${proxyClass};`);
-    } else if (abortRecordSoftFail && earlyReturnVar) {
-      emitter.proxies.tab(tabLevel).writeln(`if (!(${dataVar} instanceof ${proxyClass})) return ${earlyReturnVar};`);
-    }
+    emitCreateContinuum({
+      writer: emitter.proxies,
+      mode: asCheckMultiArm
+        ? { kind: "recordNestedMultiArm", proxyClass }
+        : abortRecordSoftFail && earlyReturnVar
+          ? {
+              kind: "recordNestedAbort",
+              proxyClass,
+              returnBinding: earlyReturnVar,
+            }
+          : { kind: "recordNestedLocal", proxyClass },
+      dataVar,
+      fieldName,
+      shouldThrow,
+      type,
+      tabLevel,
+      indentFirstLine,
+    });
   }
 }

@@ -1,5 +1,7 @@
 function isRecordNestedMode(args) {
-    return (args.mode.kind === 'recordNestedMultiArm' || args.mode.kind === 'recordNestedAbort');
+    return (args.mode.kind === 'recordNestedMultiArm' ||
+        args.mode.kind === 'recordNestedAbort' ||
+        args.mode.kind === 'recordNestedLocal');
 }
 /**
  * Emit one Create continuum continuation motif onto `writer`.
@@ -18,7 +20,7 @@ export function emitCreateContinuum(args) {
         if (mode.kind === 'recordNestedMultiArm') {
             writer.tab(tabLevel).writeln(`return ${dataVar} instanceof ${mode.proxyClass};`);
         }
-        else {
+        else if (mode.kind === 'recordNestedAbort') {
             writer
                 .tab(tabLevel)
                 .writeln(`if (!(${dataVar} instanceof ${mode.proxyClass})) return ${mode.returnBinding};`);

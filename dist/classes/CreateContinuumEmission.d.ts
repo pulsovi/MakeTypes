@@ -25,6 +25,9 @@ export type ContinuumMode = {
     kind: 'recordNestedAbort';
     proxyClass: string;
     returnBinding: string;
+} | {
+    kind: 'recordNestedLocal';
+    proxyClass: string;
 };
 type ContinuumSink = {
     writer: Writer;
@@ -49,7 +52,7 @@ export type EmitCreateContinuumArgs = (ContinuumSink & {
     session: ContinuumHelperSession;
 }) | (ContinuumSink & {
     mode: Extract<ContinuumMode, {
-        kind: 'recordNestedMultiArm' | 'recordNestedAbort';
+        kind: 'recordNestedMultiArm' | 'recordNestedAbort' | 'recordNestedLocal';
     }>;
     type?: string;
 });
