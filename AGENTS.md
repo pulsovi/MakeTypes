@@ -23,3 +23,7 @@ Single-context layout (`CONTEXT.md`, `PHILOSOPHY.md`, `docs/adr/`). See `docs/ag
 ### Coding standards
 
 Content language en; review rules under `docs/standards/`; IDE projections under `.cursor/rules/standards/` (`.mdc`). See `docs/agents/coding-standards.md`.
+
+### Git
+
+**Default branch:** `master`

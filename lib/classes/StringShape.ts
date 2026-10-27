@@ -1,3 +1,7 @@
+import {
+  emitCreateContinuum,
+  requireContinuumCheckMode,
+} from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
 
@@ -21,17 +25,18 @@ export class StringShape extends Shape {
     fieldName,
     shouldThrow = true,
     indentFirstLine = true,
-    earlyReturnVar,
-    asCheckMultiArm = false,
+    mode,
   }: EmitProxyTypeCheckArgs): void {
-    emitter.markHelperAsUsed('checkString');
-    if (indentFirstLine) emitter.proxies.tab(tabLevel);
-    if (asCheckMultiArm) {
-      emitter.proxies.writeln(`return checkString(${dataVar}, ${fieldName}, ${shouldThrow});`);
-    } else if (earlyReturnVar) {
-      emitter.proxies.writeln(`if (!checkString(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
-    } else {
-      emitter.proxies.writeln(`checkString(${dataVar}, ${fieldName}, ${shouldThrow});`);
-    }
+    emitCreateContinuum({
+      writer: emitter.proxies,
+      session: emitter,
+      mode: requireContinuumCheckMode(mode),
+      check: "checkString",
+      dataVar,
+      fieldName,
+      shouldThrow,
+      tabLevel,
+      indentFirstLine,
+    });
   }
 }

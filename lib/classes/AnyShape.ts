@@ -1,7 +1,22 @@
 import { concateShapes } from "../functions/concateShapes.js";
 import { bottomShape } from "./BottomShape.js";
+import {
+  requireContinuumCheckMode,
+  type ContinuumMode,
+} from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
+import { RecordShape } from "./RecordShape.js";
 import { BaseShape, EmitProxyTypeCheckArgs, Shape } from "./Shape.js";
+
+function continuumModeForAnyArm(subShape: Shape, emitter: Emitter): ContinuumMode {
+  if (subShape instanceof RecordShape) {
+    return {
+      kind: "recordNestedMultiArm",
+      proxyClass: subShape.getProxyClass(emitter),
+    };
+  }
+  return { kind: "checkMultiArm" };
+}
 
 export class AnyShape extends Shape {
   private readonly _shapes: Shape[];
@@ -79,15 +94,17 @@ export class AnyShape extends Shape {
     dataVar,
     fieldName,
     shouldThrow = true,
-    earlyReturnVar,
-    asCheckMultiArm = false,
+    mode,
   }: EmitProxyTypeCheckArgs): void {
     const writter = emitter.proxies;
     const distilledShapes = this.getDistilledShapes(emitter);
+    const proxyType = JSON.stringify(this.getProxyType(emitter));
+    const checkMode = requireContinuumCheckMode(mode);
+    // checkMulti([…]) scaffolding stays here; arms receive checkMulti / Record nested multi-arm modes.
     emitter.markHelperAsUsed('checkMulti');
-    if (asCheckMultiArm) {
+    if (checkMode.kind === "checkMultiArm") {
       writter.tab(tabLevel).write(`return `);
-    } else if (earlyReturnVar) {
+    } else if (checkMode.kind === "createEarlyReturn") {
       writter.tab(tabLevel).write(`if (!`);
     } else {
       writter.tab(tabLevel);
@@ -102,17 +119,17 @@ export class AnyShape extends Shape {
         fieldName,
         shouldThrow: false,
         indentFirstLine: true,
-        type: JSON.stringify(this.getProxyType(emitter)),
-        asCheckMultiArm: true,
+        type: proxyType,
+        mode: continuumModeForAnyArm(subShape, emitter),
       });
       writter.tab(tabLevel + 1).writeln(`},`);
     });
-    if (asCheckMultiArm) {
-      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${JSON.stringify(this.getProxyType(emitter))}, ${shouldThrow});`);
-    } else if (earlyReturnVar) {
-      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${JSON.stringify(this.getProxyType(emitter))}, ${shouldThrow})) return ${earlyReturnVar};`);
+    if (checkMode.kind === "checkMultiArm") {
+      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${proxyType}, ${shouldThrow});`);
+    } else if (checkMode.kind === "createEarlyReturn") {
+      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${proxyType}, ${shouldThrow})) return ${checkMode.returnBinding};`);
     } else {
-      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${JSON.stringify(this.getProxyType(emitter))}, ${shouldThrow});`);
+      writter.tab(tabLevel).writeln(`], ${dataVar}, ${fieldName}, ${proxyType}, ${shouldThrow});`);
     }
   }
 }

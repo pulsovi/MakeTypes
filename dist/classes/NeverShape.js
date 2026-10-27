@@ -1,3 +1,4 @@
+import { emitCreateContinuum, requireContinuumCheckMode, } from "./CreateContinuumEmission.js";
 import { Shape } from "./Shape.js";
 export class NeverShape extends Shape {
     get type() {
@@ -18,18 +19,17 @@ export class NeverShape extends Shape {
     getProxyType(e) {
         return "never";
     }
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, earlyReturnVar, asCheckMultiArm = false, }) {
-        emitter.markHelperAsUsed('checkNever');
-        if (indentFirstLine)
-            emitter.proxies.tab(tabLevel);
-        if (asCheckMultiArm) {
-            emitter.proxies.writeln(`return checkNever(${dataVar}, ${fieldName}, ${shouldThrow});`);
-        }
-        else if (earlyReturnVar) {
-            emitter.proxies.writeln(`if (!checkNever(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
-        }
-        else {
-            emitter.proxies.writeln(`checkNever(${dataVar}, ${fieldName}, ${shouldThrow});`);
-        }
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, mode, }) {
+        emitCreateContinuum({
+            writer: emitter.proxies,
+            session: emitter,
+            mode: requireContinuumCheckMode(mode),
+            check: "checkNever",
+            dataVar,
+            fieldName,
+            shouldThrow,
+            tabLevel,
+            indentFirstLine,
+        });
     }
 }

@@ -1,9 +1,19 @@
 import { getReferencedRecordShapes } from "../functions/getReferencedRecordShapes.js";
 import { safeField, safeInterfaceName, safeObjectField } from "../functions/sanitize.js";
 import { CollectionShape } from "./CollectionShape.js";
+import { emitCreateContinuum, requireRecordNestedMode, } from "./CreateContinuumEmission.js";
 import { FieldContext } from "./FieldContext.js";
 import { NeverShape } from "./NeverShape.js";
 import { Shape } from "./Shape.js";
+function continuumModeForRecordField(fieldShape, emitter) {
+    if (fieldShape instanceof RecordShape) {
+        return {
+            kind: "recordNestedLocal",
+            proxyClass: fieldShape.getProxyClass(emitter),
+        };
+    }
+    return { kind: "createEarlyReturn", returnBinding: "d" };
+}
 export class RecordShape extends Shape {
     get type() {
         return 2 /* BaseShape.RECORD */;
@@ -140,7 +150,7 @@ export class RecordShape extends Shape {
                     dataVar: safeObjectField('d', name),
                     fieldName: `field + ".${name}"`,
                     shouldThrow: 'shouldThrow',
-                    earlyReturnVar: 'd',
+                    mode: continuumModeForRecordField(t, e),
                 });
                 w.tab(2).writeln(`}`);
             }
@@ -151,7 +161,7 @@ export class RecordShape extends Shape {
                     dataVar: safeObjectField('d', name),
                     fieldName: `field + ".${name}"`,
                     shouldThrow: 'shouldThrow',
-                    earlyReturnVar: 'd',
+                    mode: continuumModeForRecordField(t, e),
                 });
             }
         });
@@ -207,17 +217,16 @@ export class RecordShape extends Shape {
         this._name = e.registerName(name);
         return this._name;
     }
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, type, asCheckMultiArm = false, earlyReturnVar, abortRecordSoftFail = false, }) {
-        const proxyClass = this.getProxyClass(emitter);
-        const typeArg = type ?? 'undefined';
-        if (indentFirstLine)
-            emitter.proxies.tab(tabLevel);
-        emitter.proxies.writeln(`${dataVar} = ${proxyClass}.Create(${dataVar}, ${fieldName}, ${typeArg}, ${shouldThrow});`);
-        if (asCheckMultiArm) {
-            emitter.proxies.tab(tabLevel).writeln(`return ${dataVar} instanceof ${proxyClass};`);
-        }
-        else if (abortRecordSoftFail && earlyReturnVar) {
-            emitter.proxies.tab(tabLevel).writeln(`if (!(${dataVar} instanceof ${proxyClass})) return ${earlyReturnVar};`);
-        }
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, type, mode, }) {
+        emitCreateContinuum({
+            writer: emitter.proxies,
+            mode: requireRecordNestedMode(mode),
+            dataVar,
+            fieldName,
+            shouldThrow,
+            type,
+            tabLevel,
+            indentFirstLine,
+        });
     }
 }

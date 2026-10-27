@@ -1,3 +1,4 @@
+import { emitCreateContinuum, requireContinuumCheckMode, } from "./CreateContinuumEmission.js";
 import { Shape } from "./Shape.js";
 export class NumberShape extends Shape {
     get type() {
@@ -9,18 +10,17 @@ export class NumberShape extends Shape {
     getProxyType(e) {
         return "number";
     }
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, earlyReturnVar, asCheckMultiArm = false, }) {
-        emitter.markHelperAsUsed('checkNumber');
-        if (indentFirstLine)
-            emitter.proxies.tab(tabLevel);
-        if (asCheckMultiArm) {
-            emitter.proxies.writeln(`return checkNumber(${dataVar}, ${fieldName}, ${shouldThrow});`);
-        }
-        else if (earlyReturnVar) {
-            emitter.proxies.writeln(`if (!checkNumber(${dataVar}, ${fieldName}, ${shouldThrow})) return ${earlyReturnVar};`);
-        }
-        else {
-            emitter.proxies.writeln(`checkNumber(${dataVar}, ${fieldName}, ${shouldThrow});`);
-        }
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow = true, indentFirstLine = true, mode, }) {
+        emitCreateContinuum({
+            writer: emitter.proxies,
+            session: emitter,
+            mode: requireContinuumCheckMode(mode),
+            check: "checkNumber",
+            dataVar,
+            fieldName,
+            shouldThrow,
+            tabLevel,
+            indentFirstLine,
+        });
     }
 }

@@ -1,4 +1,10 @@
 import Context from "./Context.js";
+import {
+  emitCreateContinuum,
+  requireContinuumCheckMode,
+  type ContinuumCheckMode,
+  type ContinuumMode,
+} from "./CreateContinuumEmission.js";
 import Emitter from "./Emitter.js";
 import { EntityContext } from "./EntityContext.js";
 import { RecordShape } from "./RecordShape.js";
@@ -10,6 +16,28 @@ interface CollectionShapeOptions {
   optional?: boolean;
   contexts?: Context[];
   samples?: unknown[];
+}
+
+function continuumModeForCollectionChild(
+  parentMode: ContinuumCheckMode,
+  baseShape: Shape,
+  emitter: Emitter,
+): ContinuumMode {
+  if (baseShape instanceof RecordShape) {
+    const proxyClass = baseShape.getProxyClass(emitter);
+    if (parentMode.kind === "checkMultiArm") {
+      return {
+        kind: "recordNestedAbort",
+        proxyClass,
+        returnBinding: "false",
+      };
+    }
+    return { kind: "recordNestedLocal", proxyClass };
+  }
+  if (parentMode.kind === "checkMultiArm") {
+    return { kind: "createEarlyReturn", returnBinding: "false" };
+  }
+  return parentMode;
 }
 
 export class CollectionShape extends Shape {
@@ -85,38 +113,62 @@ export class CollectionShape extends Shape {
     fieldName,
     shouldThrow = true,
     indentFirstLine = true,
-    earlyReturnVar,
-    asCheckMultiArm = false,
+    mode,
   }: EmitProxyTypeCheckArgs): void {
     const writter = emitter.proxies;
-    const typeLabel = `${this.baseShape.getProxyType(emitter)}[]`;
+    const typeArg = `"${this.baseShape.getProxyType(emitter)}[]"`;
+    const checkMode = requireContinuumCheckMode(mode);
 
-    emitter.markHelperAsUsed('checkArray');
-    if (indentFirstLine) writter.tab(tabLevel);
-    if (asCheckMultiArm) {
-      writter.writeln(`if (!checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) return false;`);
-    } else if (earlyReturnVar) {
-      writter.writeln(`if (!checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) return ${earlyReturnVar};`);
+    // checkArray gate: Create / multi-arm use continuum early-return; bare keeps `if (checkArray) { … }` framing.
+    if (checkMode.kind === "checkMultiArm") {
+      emitCreateContinuum({
+        writer: writter,
+        session: emitter,
+        mode: { kind: "createEarlyReturn", returnBinding: "false" },
+        check: "checkArray",
+        type: typeArg,
+        dataVar,
+        fieldName,
+        shouldThrow,
+        tabLevel,
+        indentFirstLine,
+      });
+    } else if (checkMode.kind === "createEarlyReturn") {
+      emitCreateContinuum({
+        writer: writter,
+        session: emitter,
+        mode: checkMode,
+        check: "checkArray",
+        type: typeArg,
+        dataVar,
+        fieldName,
+        shouldThrow,
+        tabLevel,
+        indentFirstLine,
+      });
     } else {
-      writter.writeln(`if (checkArray(${dataVar}, ${fieldName}, "${typeLabel}", ${shouldThrow})) {`);
+      emitter.markHelperAsUsed("checkArray");
+      if (indentFirstLine) writter.tab(tabLevel);
+      writter.writeln(
+        `if (checkArray(${dataVar}, ${fieldName}, ${typeArg}, ${shouldThrow})) {`,
+      );
     }
 
-    const loopTab = (!asCheckMultiArm && !earlyReturnVar) ? tabLevel + 1 : tabLevel;
-    writter.tab(loopTab).writeln(`for (let i = 0; i < ${dataVar}.length; i++) {`)
+    // Element loop framing stays here; child checks receive the continuum mode for their path.
+    const loopTab = checkMode.kind === "bare" ? tabLevel + 1 : tabLevel;
+    writter.tab(loopTab).writeln(`for (let i = 0; i < ${dataVar}.length; i++) {`);
     this.baseShape.emitProxyTypeCheck({
       emitter,
       tabLevel: loopTab + 1,
       dataVar: `${dataVar}[i]`,
       fieldName: `${fieldName} + "[" + i + "]"`,
       shouldThrow,
-      earlyReturnVar: asCheckMultiArm ? 'false' : earlyReturnVar,
-      abortRecordSoftFail: asCheckMultiArm,
-      asCheckMultiArm: false,
+      mode: continuumModeForCollectionChild(checkMode, this.baseShape, emitter),
     });
     writter.tab(loopTab).writeln(`}`);
-    if (asCheckMultiArm) {
+    if (checkMode.kind === "checkMultiArm") {
       writter.tab(tabLevel).writeln(`return true;`);
-    } else if (!earlyReturnVar) {
+    } else if (checkMode.kind === "bare") {
       writter.tab(tabLevel).writeln(`}`);
     }
   }

@@ -15,5 +15,5 @@ export declare class AnyShape extends Shape {
     emitType(e: Emitter): void;
     getProxyType(e: Emitter): string;
     equal(t: Shape): t is typeof this;
-    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, earlyReturnVar, asCheckMultiArm, }: EmitProxyTypeCheckArgs): void;
+    emitProxyTypeCheck({ emitter, tabLevel, dataVar, fieldName, shouldThrow, mode, }: EmitProxyTypeCheckArgs): void;
 }
